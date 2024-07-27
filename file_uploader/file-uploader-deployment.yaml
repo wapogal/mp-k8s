@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: file-uploader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: file-uploader
+  template:
+    metadata:
+      labels:
+        app: file-uploader
+    spec:
+      containers:
+        - name: file-uploader
+          image: wapogal/file-uploader:latest
+          ports:
+            - containerPort: 5002
+          volumeMounts:
+            - name: uploads-volume
+              mountPath: /uploads
+      volumes:
+        - name: uploads-volume
+          persistentVolumeClaim:
+            claimName: uploads-pvc
