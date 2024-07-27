@@ -25,8 +25,8 @@ def upload_file():
 
     file = request.files['file']
     # TODO: make requests not depend on the file name to distinguish between different files
-    # TODO: suboptimal solution for now is to append a random id that is returned by the server
-    filename = str(uuid.uuid4()) + "-" + file.filename
+    # TODO: suboptimal solution for now is to add a short random id before the file name that is returned by the server
+    filename = str(uuid.uuid4())[:8] + "-" + file.filename
     app.logger.info("Received file: " + filename)
     file.save(os.path.join(uploads_dir, filename))
 
@@ -50,6 +50,7 @@ def trigger_processing(file_name):
                         client.V1Container(
                             name="file-processor",
                             image="wapogal/file-processor:latest",
+                            image_pull_policy="Always",
                             volume_mounts=[client.V1VolumeMount(mount_path="/uploads", name="uploads-volume"),],
                             env=[client.V1EnvVar(name="FILE_NAME", value=file_name)]
                         )
@@ -61,7 +62,7 @@ def trigger_processing(file_name):
         )
     )
     batch_v1.create_namespaced_job(body=job, namespace="default")
-    print(f"Job {job_name} created for file {file_name}")
+    app.logger.info(f"Job {job_name} created for file {file_name}")
 
 
 if __name__ == '__main__':
