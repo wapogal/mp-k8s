@@ -5,5 +5,12 @@ metadata:
 spec:
   containers:
   - name: debug-container
-    image: curlimages/curl
+    image: alpine:latest
     command: ["sh", "-c", "sleep 3600"]
+    volumeMounts:
+    - mountPath: /uploads
+      name: uploads-volume
+  volumes:
+  - name: uploads-volume
+    persistentVolumeClaim:
+      claimName: uploads-pvc

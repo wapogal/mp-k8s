@@ -1,7 +1,9 @@
 import uuid
+import logging
 from flask import Flask, request, jsonify
 from kubernetes import client, config
 import os
+import sys
 
 # Management Service
 # This service allows users to upload a data processing workload as a wasm file
@@ -9,22 +11,31 @@ import os
 
 
 app =Flask(__name__)
-uploads_dir = "/users/arthurpauwels/Documents/Masterproef/mp-k8s/uploads"
+app.logger.addHandler(logging.StreamHandler())
+print("test-output", file=sys.stderr)
+app.logger.setLevel(logging.INFO)
+uploads_dir = "/uploads"
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    app.logger.info(f"received request for file upload")
     if not os.path.exists(uploads_dir):
         os.makedirs(uploads_dir)
-    print(request.files)
+    app.logger.info("Upload directory: " + uploads_dir)
+
     file = request.files['file']
     # TODO: make requests not depend on the file name to distinguish between different files
     # TODO: suboptimal solution for now is to append a random id that is returned by the server
-    filename = file.filename + "-" + str(uuid.uuid4())
+    filename = str(uuid.uuid4()) + "-" + file.filename
+    app.logger.info("Received file: " + filename)
     file.save(os.path.join(uploads_dir, filename))
+
+    trigger_processing(filename)
+
     return jsonify({'status': 'success'})
 
 def trigger_processing(file_name):
-    print("Triggering processing")
+    app.logger.info(f"Triggering processing for file {file_name}")
     config.load_incluster_config()
     batch_v1 = client.BatchV1Api()
     job_name = f"file-processing-job-{file_name.replace('.', '-')}"
