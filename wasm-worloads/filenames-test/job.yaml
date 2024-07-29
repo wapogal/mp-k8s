@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  name: filenames-test-wasm
+spec:
+  template:
+    metadata:
+      annotations:
+        module.wasm.image/variant: compat-smart
+      creationTimestamp: null
+    spec:
+      containers:
+      - image: wapogal/filenames-test-wasm:latest
+        imagePullPolicy: Always
+        name: filenames-test-wasm
+        volumeMounts:
+        - name: wasm-input
+          mountPath: /input
+        - name: wasm-output
+          mountPath: /output
+      volumes:
+      - name: wasm-input
+        hostPath:
+          path: /mnt/host-folder/input
+          type: Directory
+      - name: wasm-output
+        hostPath:
+          path: /mnt/host-folder/output
+          type: Directory
+      restartPolicy: Never
+      runtimeClassName: wasmedge
+  backoffLimit: 1
+
+# apiVersion: batch/v1
+# kind: Job
+# metadata:
+#   creationTimestamp: null
+#   name: filenames-test-wasm
+# spec:
+#   template:
+#     metadata:
+#       annotations:
+#         module.wasm.image/variant: compat-smart
+#       creationTimestamp: null
+#     spec:
+#       containers:
+#       - image: wapogal/filenames-test-wasm:latest
+#         imagePullPolicy: Always
+#         name: filenames-test-wasm
+#         resources: {}
+#         volumeMounts:
+#         - name: wasm-input-pvc
+#           mountPath: /input
+#         - name: wasm-output-pvc
+#           mountPath: /output
+#       restartPolicy: Never
+#       volumes:
+#       - name: wasm-input-pvc
+#         persistentVolumeClaim:
+#           claimName: wasm-input-pvc
+#       - name: wasm-output-pvc
+#         persistentVolumeClaim:
+#           claimName: wasm-output-pvc
+#       runtimeClassName: wasmedge
+#   backoffLimit: 1

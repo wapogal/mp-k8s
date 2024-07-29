@@ -1,7 +1,0 @@
-FROM python:3.8-slim
-
-WORKDIR /app
-
-COPY file-processor.py /app/file-processor.py
-
-CMD ["python", "/app/file-processor.py"]

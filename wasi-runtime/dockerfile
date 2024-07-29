@@ -1,7 +1,0 @@
-FROM deislabs/wasi:latest
-
-WORKDIR /input
-VOLUME /input
-VOLUME /output
-
-ENTRYPOINT ["/wasmtime"]
