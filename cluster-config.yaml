@@ -5,4 +5,3 @@ nodes:
   extraMounts:
   - hostPath: /Users/arthurpauwels/Documents/Masterproef/mp-k8s/host-folder
     containerPath: /mnt/host-folder
-

@@ -1,3 +1,2 @@
 FROM scratch
-COPY ./target/wasm32-wasi/release/filenames-test.wasm /filenames-test.wasm
-ENTRYPOINT ["/filenames-test.wasm"]
+ENTRYPOINT ["workload/workload.wasm"]
