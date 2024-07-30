@@ -15,14 +15,10 @@ app =Flask(__name__)
 app.logger.addHandler(logging.StreamHandler())
 app.logger.setLevel(logging.INFO)
 host_folder = "/host-folder"
-uploads_dir = os.path.join(host_folder, "uploads")
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
     file = request.files['file']
-
-    if not os.path.exists(uploads_dir):
-        os.makedirs(uploads_dir)
     
     # check if the uploaded file is a wasm file
     if not file.filename.endswith(".wasm"):
