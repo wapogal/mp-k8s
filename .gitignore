@@ -1,5 +1,6 @@
 __pycache__/
 /host-folder/
+.ds_store
 
 # Generated files
 wasm-worloads/*/target/

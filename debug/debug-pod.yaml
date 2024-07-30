@@ -5,12 +5,5 @@ metadata:
 spec:
   containers:
   - name: debug-container
-    image: alpine:latest
+    image: wapogal/debug-pod:latest
     command: ["sh", "-c", "sleep 3600"]
-    volumeMounts:
-    - mountPath: /host-folder
-      name: host-folder
-  volumes:
-  - name: host-folder
-    hostPath:
-      path: /mnt/host-folder
