@@ -19,9 +19,9 @@ spec:
           ports:
             - containerPort: 5002
           volumeMounts:
-            - name: uploads-volume
-              mountPath: /uploads
+            - name: host-folder
+              mountPath: /host-folder
       volumes:
-        - name: uploads-volume
-          persistentVolumeClaim:
-            claimName: uploads-pvc
+        - name: host-folder
+          hostPath:
+            path: /mnt/host-folder

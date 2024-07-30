@@ -3,6 +3,7 @@ import logging
 from flask import Flask, request, jsonify
 from kubernetes import client, config
 import os
+import shortuuid
 import sys
 
 # Management Service
@@ -12,57 +13,67 @@ import sys
 
 app =Flask(__name__)
 app.logger.addHandler(logging.StreamHandler())
-print("test-output", file=sys.stderr)
 app.logger.setLevel(logging.INFO)
-uploads_dir = "/uploads"
+host_folder = "/host-folder"
+uploads_dir = os.path.join(host_folder, "uploads")
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    app.logger.info(f"received request for file upload")
+    file = request.files['file']
+
     if not os.path.exists(uploads_dir):
         os.makedirs(uploads_dir)
-    app.logger.info("Upload directory: " + uploads_dir)
+    
+    # check if the uploaded file is a wasm file
+    if not file.filename.endswith(".wasm"):
+        app.logger.info("File is not a wasm file: " + file.filename)
+        return jsonify({'status': 'error', 'message': 'File must be a wasm file'})
+    
+    # set up a directory for the wasm workload
+    workload_id = shortuuid.uuid().lower()
+    workload_path = os.path.join(host_folder, workload_id)
 
-    file = request.files['file']
-    # TODO: make requests not depend on the file name to distinguish between different files
-    # TODO: suboptimal solution for now is to add a short random id before the file name that is returned by the server
-    filename = str(uuid.uuid4())[:8] + "-" + file.filename
-    app.logger.info("Received file: " + filename)
-    file.save(os.path.join(uploads_dir, filename))
+    if os.path.exists(workload_path):
+        app.logger.info("Workload directory already exists: " + workload_path)
+        return jsonify({'status': 'error', 'message': 'Workload directory already exists'})
+    
+    os.makedirs(workload_path)
+    file.save(os.path.join(workload_path, file.filename))
 
-    trigger_processing(filename)
-
+    # trigger the processing and return success (TODO: return something else that makes more sense)
+    trigger_processing(workload_path, workload_id, file.filename)
     return jsonify({'status': 'success'})
 
-def trigger_processing(file_name):
+def trigger_processing(workload_path: str, workload_id: str, file_name:str):
     app.logger.info(f"Triggering processing for file {file_name}")
     config.load_incluster_config()
-    batch_v1 = client.BatchV1Api()
-    job_name = f"file-processing-job-{file_name.replace('.', '-')}"
-    job = client.V1Job(
-        api_version="batch/v1",
-        kind="Job",
-        metadata=client.V1ObjectMeta(name=job_name),
-        spec=client.V1JobSpec(
-            template=client.V1PodTemplateSpec(
-                spec=client.V1PodSpec(
-                    containers=[
-                        client.V1Container(
-                            name="file-processor",
-                            image="wapogal/file-processor:latest",
-                            image_pull_policy="Always",
-                            volume_mounts=[client.V1VolumeMount(mount_path="/uploads", name="uploads-volume"),],
-                            env=[client.V1EnvVar(name="FILE_NAME", value=file_name)]
-                        )
-                    ],
-                    volumes=[client.V1Volume(name="uploads-volume", persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name="uploads-pvc"))],
-                    restart_policy="Never"
-                )
-            )
+    api_instance = client.CustomObjectsApi()
+
+    # configure the wasm runner
+    wasm_runner_manifest = {
+        "apiVersion": "example.com/v1",
+        "kind": "WasmRunner",
+        "metadata": {
+            "name": f'wasm-runner-{workload_id}'
+        },
+        "spec": {
+            "command": [f'/app/{file_name}'],  #TODO change properties of the wasm runner so it can be fully configured and doesn't need things like /app hardcoded (use defaults if not specified)
+            "hostPath": '/mnt/host-folder/' + workload_id,
+            "name": f'wasm-runner-{workload_id}'
+        }
+    }
+    
+    try:
+        api_instance.create_namespaced_custom_object(
+            group="example.com",
+            version="v1",
+            namespace="default",
+            plural="wasmrunners",
+            body=wasm_runner_manifest
         )
-    )
-    batch_v1.create_namespaced_job(body=job, namespace="default")
-    app.logger.info(f"Job {job_name} created for file {file_name}")
+
+    except client.ApiException as e:
+        app.logger.error(f"Error creating wasm runner: {e}")
 
 
 if __name__ == '__main__':

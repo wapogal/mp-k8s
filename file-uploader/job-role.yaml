@@ -1,19 +1,17 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: job-creator
+  name: wasm-runner-creator
   namespace: default
 rules:
-- apiGroups: ["batch"]
-  resources: ["jobs"]
+- apiGroups: ["example.com"]
+  resources: ["wasmrunners"]
   verbs: ["create", "get", "list", "watch"]
-
 ---
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: job-creator-binding
+  name: wasm-runner-creator-binding
   namespace: default
 subjects:
 - kind: ServiceAccount
@@ -21,5 +19,5 @@ subjects:
   namespace: default
 roleRef:
   kind: Role
-  name: job-creator
+  name: wasm-runner-creator
   apiGroup: rbac.authorization.k8s.io

@@ -1,7 +1,7 @@
 from kubernetes import client, config, watch
 import yaml
 
-def create_job(wasm_rummer_spec):
+def create_job(wasm_rummer_spec):  # TODO figure out why an instance of this boi is always created
     job = {
         "apiVersion": "batch/v1",
         "kind": "Job",

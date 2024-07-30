@@ -8,9 +8,9 @@ spec:
     image: alpine:latest
     command: ["sh", "-c", "sleep 3600"]
     volumeMounts:
-    - mountPath: /uploads
-      name: uploads-volume
+    - mountPath: /host-folder
+      name: host-folder
   volumes:
-  - name: uploads-volume
-    persistentVolumeClaim:
-      claimName: uploads-pvc
+  - name: host-folder
+    hostPath:
+      path: /mnt/host-folder

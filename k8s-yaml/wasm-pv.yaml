@@ -1,45 +1,25 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: wasm-input-pv
+  name: host-folder-pv
 spec:
   capacity:
     storage: 1Gi
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
   hostPath:
-    path: "/Users/arthurpauwels/Documents/Masterproef/mp-k8s/wasm-follders/input"
+    path: "/mnt/host-folder"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: wasm-input-pvc
+  name: host-folder-pvc
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: wasm-output-pv
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteMany
-  hostPath:
-    path: "/Users/arthurpauwels/Documents/Masterproef/mp-k8s/wasm-follders/output"
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: wasm-output-pvc
-spec:
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 1Gi
+  storageClassName: manual
