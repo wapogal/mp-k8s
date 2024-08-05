@@ -19,7 +19,9 @@ spec:
                   type: array
                   items:
                     type: string
-                hostPath:
+                secretName:
+                  type: string
+                fileName:
                   type: string
                 name:
                   type: string

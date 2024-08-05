@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hello-world
+spec:
+  template:
+    metadata:
+      name: hello-world
+      annotations:
+        module.wasm.image/variant: compat-smart
+      creationTimestamp: null
+    spec:
+      containers:
+      - image: wapogal/hello-wasm:latest
+        name: hello-world
+        command: ["/hello-world.wasm"]
+      restartPolicy: Never
+      runtimeClassName: wasmedge

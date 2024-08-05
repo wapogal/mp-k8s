@@ -1,3 +1,4 @@
+import base64
 import uuid
 import logging
 from flask import Flask, request, jsonify
@@ -25,25 +26,36 @@ def upload_file():
         app.logger.info("File is not a wasm file: " + file.filename)
         return jsonify({'status': 'error', 'message': 'File must be a wasm file'})
     
-    # set up a directory for the wasm workload
+    # Create a unique workload id
     workload_id = shortuuid.uuid().lower()
-    workload_path = os.path.join(host_folder, workload_id)
-
-    if os.path.exists(workload_path):
-        app.logger.info("Workload directory already exists: " + workload_path)
-        return jsonify({'status': 'error', 'message': 'Workload directory already exists'})
-    
-    os.makedirs(workload_path)
-    file.save(os.path.join(workload_path, file.filename))
 
     # trigger the processing and return success (TODO: return something else that makes more sense)
-    trigger_processing(workload_path, workload_id, file.filename)
+    trigger_processing(workload_id, file.filename, file)
     return jsonify({'status': 'success'})
 
-def trigger_processing(workload_path: str, workload_id: str, file_name:str):
+def trigger_processing(workload_id: str, file_name: str, file):
     app.logger.info(f"Triggering processing for file {file_name}")
     config.load_incluster_config()
     api_instance = client.CustomObjectsApi()
+
+    # Create secret with file
+    secret_name = f'wasm-secret-{workload_id}'
+
+    binary_file_data = base64.b64encode(file.read()).decode('utf-8')
+
+    secret = client.V1Secret(
+        metadata=client.V1ObjectMeta(name=secret_name),
+        data={file_name: binary_file_data},
+        type='Opaque'
+    )
+
+    v1 = client.CoreV1Api()
+
+    v1.create_namespaced_secret(
+        namespace="default",
+        body=secret
+    )
+    
 
     # configure the wasm runner
     wasm_runner_manifest = {
@@ -53,8 +65,9 @@ def trigger_processing(workload_path: str, workload_id: str, file_name:str):
             "name": f'wasm-runner-{workload_id}'
         },
         "spec": {
-            "command": [f'/app/{file_name}'],  #TODO change properties of the wasm runner so it can be fully configured and doesn't need things like /app hardcoded (use defaults if not specified)
-            "hostPath": '/mnt/host-folder/' + workload_id,
+            "command": [f'/wasm/{file_name}'],  #TODO change properties of the wasm runner so it can be fully configured and doesn't need things like /app hardcoded (use defaults if not specified)
+            "secretName": secret_name,
+            "fileName": file_name,
             "name": f'wasm-runner-{workload_id}'
         }
     }
