@@ -18,10 +18,3 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 5002
-          volumeMounts:
-            - name: host-folder
-              mountPath: /host-folder
-      volumes:
-        - name: host-folder
-          hostPath:
-            path: /mnt/host-folder

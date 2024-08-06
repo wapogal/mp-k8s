@@ -1,7 +1,7 @@
 import base64
 import uuid
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from kubernetes import client, config
 import os
 import shortuuid
@@ -12,10 +12,13 @@ import sys
 # The service will then create a pod to execute the uploaded workload on the requested data
 
 
-app =Flask(__name__)
+app =Flask(__name__, template_folder='web/templates', static_folder='web/static')
 app.logger.addHandler(logging.StreamHandler())
 app.logger.setLevel(logging.INFO)
-host_folder = "/host-folder"
+
+@app.route('/')
+def index():
+    return render_template('upload.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -29,9 +32,8 @@ def upload_file():
     # Create a unique workload id
     workload_id = shortuuid.uuid().lower()
 
-    # trigger the processing and return success (TODO: return something else that makes more sense)
     trigger_processing(workload_id, file.filename, file)
-    return jsonify({'status': 'success'})
+    return jsonify({'status': 'success', 'workload_id': workload_id})
 
 def trigger_processing(workload_id: str, file_name: str, file):
     app.logger.info(f"Triggering processing for file {file_name}")
@@ -83,6 +85,34 @@ def trigger_processing(workload_id: str, file_name: str, file):
 
     except client.ApiException as e:
         app.logger.error(f"Error creating wasm runner: {e}")
+
+@app.route('/status/<workload_id>', methods=['GET'])
+def get_status(workload_id):
+    batch_v1 = client.BatchV1Api()
+    try:
+        app.logger.info(f"Checking status of workload {workload_id}")
+        job = batch_v1.read_namespaced_job(name="wasm-runner-" + workload_id, namespace="default")
+        app.logger.info(f"Job status: {job.status.succeeded}")
+        if job.status.succeeded is not None and job.status.succeeded > 0:
+            log = get_job_logs(job.metadata.name)
+            return jsonify({'status': 'completed', 'log': log})
+        elif job.status.failed is not None and job.status.failed > 0:
+            log = get_job_logs(job.metadata.name)
+            return jsonify({'status': 'error', 'log': log})
+        else:
+            return jsonify({'status': 'running'})
+    except client.ApiException as e:
+        app.logger.error(f"Error getting status: {e}")
+        return jsonify({'status': 'error', 'log': f"Error getting status: {e}"})
+
+def get_job_logs(job_name):
+    core_v1 = client.CoreV1Api()
+    pod_list = core_v1.list_namespaced_pod(namespace="default", label_selector=f"job-name={job_name}")
+    logs = ""
+    for pod in pod_list.items:
+        logs += core_v1.read_namespaced_pod_log(name=pod.metadata.name, namespace="default")
+    return logs
+
 
 
 if __name__ == '__main__':

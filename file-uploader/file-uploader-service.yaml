@@ -7,5 +7,7 @@ spec:
     app: file-uploader
   ports:
     - protocol: TCP
-      port: 5002
+      port: 80
       targetPort: 5002
+      nodePort: 30080
+  type: NodePort
