@@ -6,9 +6,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def create_job(wasm_runner_spec): 
-    logger.info("SPEC")
-    print(wasm_runner_spec)
-    logger.info("END SPEC") # TODO figure out why an instance of this boi is always created
     job = {
         "apiVersion": "batch/v1",
         "kind": "Job",
@@ -51,9 +48,6 @@ def create_job(wasm_runner_spec):
                 }
             }
         }}
-    logger.info("JOB")
-    logger.info(job)
-    logger.info("END JOB")
 
     return job
 
@@ -72,11 +66,22 @@ def main():
             resource_version=resource_version
         )
         for event in stream:
-            if event['type'] == 'ADDED':  # TODO: Add a delete event
-                print(event)
+            if event['type'] == 'ADDED':
+                logger.info("ADDED")
+                logger.info(event)
                 batch_api.create_namespaced_job(
                     namespace=event['object']['metadata']['namespace'],
                     body=create_job(event['object']['spec'])
+                )
+            elif event['type'] == 'DELETED':
+                logger.info("DELETED")
+                logger.info(event)
+                batch_api.delete_namespaced_job(
+                    name=event['object']['metadata']['name'],
+                    namespace=event['object']['metadata']['namespace'],
+                    body=client.V1DeleteOptions(
+                        propagation_policy='Background'
+                    )
                 )
 
 if __name__ == '__main__':
