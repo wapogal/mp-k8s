@@ -55,6 +55,7 @@ def main():
     config.load_incluster_config()
     api = client.CustomObjectsApi()
     batch_api = client.BatchV1Api()
+    core_api = client.CoreV1Api()
 
     resource_version = ''
     while True:
@@ -66,19 +67,30 @@ def main():
             resource_version=resource_version
         )
         for event in stream:
+            logger.info(f"Event: {event}")
             if event['type'] == 'ADDED':
-                logger.info("ADDED")
-                logger.info(event)
                 batch_api.create_namespaced_job(
                     namespace=event['object']['metadata']['namespace'],
                     body=create_job(event['object']['spec'])
                 )
             elif event['type'] == 'DELETED':
-                logger.info("DELETED")
-                logger.info(event)
+                namespace = event['object']['metadata']['namespace']
+                #delete the job
                 batch_api.delete_namespaced_job(
                     name=event['object']['metadata']['name'],
-                    namespace=event['object']['metadata']['namespace'],
+                    namespace=namespace,
+                    body=client.V1DeleteOptions(
+                        propagation_policy='Background'
+                    )
+                )
+
+                # delete the secret
+                logger.info("Deleting secret")
+                logger.info(event)
+                logger.info(event['object']['spec']['secretName'])
+                core_api.delete_namespaced_secret(
+                    name=event['object']['spec']['secretName'],
+                    namespace=namespace,
                     body=client.V1DeleteOptions(
                         propagation_policy='Background'
                     )

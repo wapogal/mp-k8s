@@ -1,3 +1,10 @@
+# Project notes
+## Setup requirements
+- kwasm 
+    - https://kwasm.sh/quickstart/
+- redpanda 
+    - https://docs.redpanda.com/current/deploy/deployment-option/self-hosted/kubernetes/local-guide/?tab=tabs-3-helm)
+
 ## TODO's
 ### Essential
 - data via kafka (redpanda)
@@ -19,6 +26,7 @@
 - security
     - now people can access just about anyone's pods results if they know the ID
     - analyse security further
+- Use namespaces
 
 ### Writing
 - look for kwasm papers
