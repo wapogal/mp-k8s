@@ -1,0 +1,72 @@
+[
+    {
+        "timestamp": 1619000040000,
+        "metric": "temperature.celsius::number",
+        "value": 19.677089583816606,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619000100000,
+        "metric": "temperature.celsius::number",
+        "value": 20.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619000160000,
+        "metric": "humidity.percent::number",
+        "value": 45.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619000220000,
+        "metric": "temperature.celsius::number",
+        "value": 21.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619000280000,
+        "metric": "humidity.percent::number",
+        "value": 50.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619000340000,
+        "metric": "temperature.celsius::number",
+        "value": 18.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619000400000,
+        "metric": "humidity.percent::number",
+        "value": 55.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619000460000,
+        "metric": "temperature.celsius::number",
+        "value": 19.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619000520000,
+        "metric": "humidity.percent::number",
+        "value": 60.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619000580000,
+        "metric": "temperature.celsius::number",
+        "value": 17.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    }
+]

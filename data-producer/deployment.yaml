@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-producer
+  labels:
+    app: data-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-producer
+  template:
+    metadata:
+      labels:
+        app: data-producer
+    spec:
+      containers:
+      - name: data-producer
+        image: wapogal/data-producer:latest
+        imagePullPolicy: Always
+        env:
+        - name: KAFKA_BROKER
+          value: "redpanda.redpanda.svc.cluster.local:9093"
