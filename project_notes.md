@@ -1,9 +1,31 @@
 # Project notes
 ## Setup requirements
+- jetstack cert-manager
+    - needed for redpanda
+- redpanda 
+    - Needed 3 worker and isntall before kwasm
+    - disabled tls
+    - stateful set replicas to 1 (one broker total)
+    - https://docs.redpanda.com/current/deploy/deployment-option/self-hosted/kubernetes/local-guide/?tab=tabs-5-helm#deploy-redpanda-and-redpanda-console
+    - https://medium.com/@tuncayyaylali/kubernetes-üzerinde-redpanda-2e618fec24d8
 - kwasm 
     - https://kwasm.sh/quickstart/
-- redpanda 
-    - https://docs.redpanda.com/current/deploy/deployment-option/self-hosted/kubernetes/local-guide/?tab=tabs-3-helm)
+
+## RUST things
+- ```bash cargo install wasm-pack```
+- no kafka in wasm wasi yet (uses system libraries)
+- solution options:
+     - http proxy
+        - introduces potential bottleneck and definite latency and overhead
+        - more setup required
+     - rskafka_wasi, (going with this option for now)
+        - not actively maintained anymore and not well documented
+        - based on rskafka which is more actively maintained
+        - under wasmedge
+        - requires async which luckily is supported by wasmedge runtime, but not by all of them
+        - https://github.com/WasmEdge/rskafka_wasi
+        - now included in rskafka
+
 
 ## TODO's
 ### Essential
@@ -27,6 +49,7 @@
     - now people can access just about anyone's pods results if they know the ID
     - analyse security further
 - Use namespaces
+- interpreted v compiled languages
 
 ### Writing
 - look for kwasm papers

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyter-notebook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyter-notebook
+  template:
+    metadata:
+      labels:
+        app: jupyter-notebook
+    spec:
+      containers:
+      - name: jupyter-notebook
+        image: jupyter/base-notebook
+        ports:
+        - containerPort: 8888
+        volumeMounts:
+        - mountPath: /home/jovyan/work
+          name: notebook-storage
+      volumes:
+      - name: notebook-storage
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyter-notebook-service
+spec:
+  selector:
+    app: jupyter-notebook
+  ports:
+    - protocol: TCP
+      port: 8888
+      targetPort: 8888
+      nodePort: 30007
+  type: NodePort

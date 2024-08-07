@@ -1,9 +1,0 @@
-apiVersion: example.com/v1
-kind: WasmRunner
-metadata:
-  name: wasm-runner-instance
-spec:
-  command:
-    - /app/main.wasm
-  hostPath: /mnt/host-folder/example-workload-dir
-  name: wasm-runner-instance
