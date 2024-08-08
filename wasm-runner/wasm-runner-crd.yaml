@@ -15,15 +15,18 @@ spec:
             spec:
               type: object
               properties:
-                command:
-                  type: array
-                  items:
-                    type: string
                 secretName:
                   type: string
-                fileName:
-                  type: string
                 name:
+                  type: string
+                workloadId:
+                  type: string
+                proxyAddress:
+                  type: string
+                deleteAfterCompletion:
+                  type: boolean
+                  default: true
+                fileName:
                   type: string
   scope: Namespaced
   names:

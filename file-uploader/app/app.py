@@ -16,6 +16,8 @@ app =Flask(__name__, template_folder='web/templates', static_folder='web/static'
 app.logger.addHandler(logging.StreamHandler())
 app.logger.setLevel(logging.INFO)
 
+proxy_address = os.environ.get('PROXY_ADDRESS')
+
 @app.route('/')
 def index():
     return render_template('upload.html')
@@ -67,10 +69,11 @@ def trigger_processing(workload_id: str, file_name: str, file):
             "name": f'wasm-runner-{workload_id}'
         },
         "spec": {
-            "command": [f'/wasm/{file_name}'],  #TODO change properties of the wasm runner so it can be fully configured and doesn't need things like /app hardcoded (use defaults if not specified)
             "secretName": secret_name,
             "fileName": file_name,
-            "name": f'wasm-runner-{workload_id}'
+            "workloadId": workload_id,
+            "proxyAddress": proxy_address,
+            "deleteAfterCompletion": False,
         }
     }
     

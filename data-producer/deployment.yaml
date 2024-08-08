@@ -20,4 +20,4 @@ spec:
         imagePullPolicy: Always
         env:
         - name: KAFKA_BROKER
-          value: "redpanda.redpanda.svc.cluster.local:9093"
+          value: redpanda.redpanda.svc.cluster.local:9093

@@ -13,7 +13,7 @@ rules:
   resources: ["pods", "services"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 - apiGroups: ["batch"]
-  resources: ["jobs"]
+  resources: ["jobs", "jobs/status"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 - apiGroups: ["example.com"]
   resources: ["wasmrunners"]
@@ -53,4 +53,7 @@ spec:
       containers:
       - name: wasm-runner-controller
         image: wapogal/wasm-runner-controller:latest
+        env:
+        - name: KAFKA_BROKER
+          value: redpanda.redpanda.svc.cluster.local:9093
         imagePullPolicy: Always

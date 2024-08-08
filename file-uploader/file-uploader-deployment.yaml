@@ -15,6 +15,9 @@ spec:
       containers:
         - name: file-uploader
           image: wapogal/file-uploader:latest
+          env:
+            - name: PROXY_ADDRESS
+              value: redpanda.redpanda.svc.cluster.local:8083
           imagePullPolicy: Always
           ports:
             - containerPort: 5002
