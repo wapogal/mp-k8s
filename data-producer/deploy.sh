@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Variables
-IMAGE_NAME="wapogal/file-uploader:latest"
-DEPLOYMENT_NAME="file-uploader"
+IMAGE_NAME="wapogal/data-producer:latest"
+DEPLOYMENT_NAME="data-producer"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEPLOYMENT_FILE="${SCRIPT_DIR}/file-uploader-deployment.yaml"
+DEPLOYMENT_FILE="${SCRIPT_DIR}/deployment.yaml"
 DOCKER_FILE="${SCRIPT_DIR}/dockerfile"
 
 # Delete existing deployment

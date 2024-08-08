@@ -1,15 +1,17 @@
 #!/bin/bash
 
 # Variables
-IMAGE_NAME="wapogal/file-uploader:latest"
-DEPLOYMENT_NAME="file-uploader"
+IMAGE_NAME="wapogal/wasm-runner-controller:latest"
+DEPLOYMENT_NAME="wasm-runner-controller"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEPLOYMENT_FILE="${SCRIPT_DIR}/file-uploader-deployment.yaml"
+DEPLOYMENT_FILE="${SCRIPT_DIR}/wasm-runner-controller-deployment.yaml"
 DOCKER_FILE="${SCRIPT_DIR}/dockerfile"
 
 # Delete existing deployment
 echo "Deleting existing deployment..."
 kubectl delete deployment $DEPLOYMENT_NAME
+echo "Deleting existing wasmrunners..."
+kubectl delete wasmrunners --all
 
 # Build the Docker image
 echo "Building Docker image..."
