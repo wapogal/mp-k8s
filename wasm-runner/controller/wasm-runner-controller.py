@@ -66,7 +66,8 @@ def handle_added_event(event):
         logger.error(traceback.format_exc())
         return
     
-    resolved_proxy_address = dns.resolver.resolve(wasm_runner_spec["proxyAddress"].split(':', 1)[0])[0]
+    h, p = wasm_runner_spec["proxyAddress"].split(':', 1)
+    resolved_proxy_address = dns.resolver.resolve(h)[0]
     logger.info(f"Resolved proxy address: {resolved_proxy_address}")
 
     job = V1Job(  # TODO: Check if this even needs to be a job
@@ -99,7 +100,8 @@ def handle_added_event(event):
                             command=[workload_path],
                             env=[
                                 V1EnvVar(name= "WORKLOAD_ID", value=wasm_runner_spec['workloadId']),
-                                V1EnvVar(name= "PROXY_ADDRESS", value=str(resolved_proxy_address)),
+                                V1EnvVar(name= "PROXY_IP", value=str(resolved_proxy_address)), 
+                                V1EnvVar(name= "PROXY_PORT", value=str(p)),
                                 V1EnvVar(name= "INPUT_TOPIC", value=input_topic),
                                 V1EnvVar(name= "OUTPUT_TOPIC", value=output_topic),
                             ],

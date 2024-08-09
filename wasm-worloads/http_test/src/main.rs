@@ -1,19 +1,37 @@
+use std::thread::sleep;
+use std::time::Duration;
+
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), reqwest::Error> {
     // Get env variables
-    let proxy_address = std::env::var("PROXY_ADDRESS").unwrap();
+    let proxy_ip = std::env::var("PROXY_IP").unwrap();
+    let proxy_port = std::env::var("PROXY_PORT").unwrap();
     let input_topic = std::env::var("INPUT_TOPIC").unwrap();
-    // output_topic = std::env::var("OUTPUT_TOPIC").unwrap();
 
-    let request_url = proxy_address + "/topics/" + &input_topic + "/consumer";
+    let request_url = "http://".to_owned() + &proxy_ip + ":" + &proxy_port + "/topics/" + &input_topic + "/partitions/0/records";
 
-    eprintln!("Fetching {} ...", request_url);
 
-    let res = reqwest::get(request_url).await?;
+    sleep(Duration::from_secs(10));
 
-    eprintln!("Response: {:?} {}", res.version(), res.status());
-    eprintln!("Headers: {:#?}", res.headers());
-    eprintln!("Body: {:#?}", res.text().await?);
+    eprintln!("Fetching from {}", request_url);
+
+    let client = reqwest::Client::new();
+
+    let res = client
+        .get(&request_url)
+        .header("Accept", "application/vnd.kafka.json.v2+json")
+        .query(&[
+            ("offset", "0"),
+            ("timeout", "1000"),
+            ("max_bytes", "100000"),
+        ])
+        .send()
+        .await?;
+
+    eprintln!("Response Status: {:?}", res.status());
+
+    let body = res.text().await?;
+    eprintln!("Response Body: {:?}", body);
 
     Ok(())
 }

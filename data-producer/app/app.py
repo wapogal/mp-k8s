@@ -53,11 +53,12 @@ class DataProducer:
             topic_event = event['topic_event']
             topic_id = topic_event['topic']
             status = topic_event['status']
-            type = topic_event['type']
 
-            if status == "created" and type == "input" and topic_id:
-                self.active_topics.add(topic_id)
-                self.produce_data(topic_id)
+            if status == "created":
+                type = topic_event['type']
+                if type == "input":
+                    self.active_topics.add(topic_id)
+                    self.produce_data(topic_id)
             elif status == "deleted" and topic_id in self.active_topics:
                 self.active_topics.remove(topic_id)
 
