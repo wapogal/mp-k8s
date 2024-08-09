@@ -21,3 +21,5 @@ spec:
         env:
         - name: KAFKA_BROKER
           value: redpanda.redpanda.svc.cluster.local:9093
+        - name: KAFKA_NOTIFY_TOPIC
+          value: topic-notifications

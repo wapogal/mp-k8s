@@ -15,10 +15,6 @@ spec:
             spec:
               type: object
               properties:
-                secretName:
-                  type: string
-                name:
-                  type: string
                 workloadId:
                   type: string
                 proxyAddress:
@@ -26,8 +22,6 @@ spec:
                 deleteAfterCompletion:
                   type: boolean
                   default: true
-                fileName:
-                  type: string
   scope: Namespaced
   names:
     plural: wasmrunners

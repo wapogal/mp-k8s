@@ -34,31 +34,26 @@ def upload_file():
     # Create a unique workload id
     workload_id = shortuuid.uuid().lower()
 
-    trigger_processing(workload_id, file.filename, file)
+    # Create resource directory
+    resource_dir = f"/workload-resources/{workload_id}"
+    try:
+        os.mkdir(resource_dir)
+    except FileExistsError:
+        logging.error(f"Resource directory {resource_dir} already exists")
+        pass
+
+    # Save file to resource directory
+    workload_path = f"{resource_dir}/workload.wasm"
+    with open(workload_path, 'wb') as f:
+        f.write(file.read())
+
+
+    trigger_processing(workload_id, workload_path)
     return jsonify({'status': 'success', 'workload_id': workload_id})
 
-def trigger_processing(workload_id: str, file_name: str, file):
-    app.logger.info(f"Triggering processing for file {file_name}")
+def trigger_processing(workload_id: str, workload_path: str):
     config.load_incluster_config()
     api_instance = client.CustomObjectsApi()
-
-    # Create secret with file
-    secret_name = f'wasm-secret-{workload_id}'
-
-    binary_file_data = base64.b64encode(file.read()).decode('utf-8')
-
-    secret = client.V1Secret(
-        metadata=client.V1ObjectMeta(name=secret_name),
-        data={file_name: binary_file_data},
-        type='Opaque'
-    )
-
-    v1 = client.CoreV1Api()
-
-    v1.create_namespaced_secret(
-        namespace="default",
-        body=secret
-    )
     
 
     # configure the wasm runner
@@ -69,8 +64,6 @@ def trigger_processing(workload_id: str, file_name: str, file):
             "name": f'wasm-runner-{workload_id}'
         },
         "spec": {
-            "secretName": secret_name,
-            "fileName": file_name,
             "workloadId": workload_id,
             "proxyAddress": proxy_address,
             "deleteAfterCompletion": False,

@@ -3,4 +3,5 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 COPY wasm-runner-controller.py wasm-runner-controller.py
+COPY topic_manager.py topic_manager.py
 CMD ["python", "wasm-runner-controller.py"]

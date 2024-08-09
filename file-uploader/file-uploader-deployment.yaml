@@ -21,3 +21,10 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 5002
+          volumeMounts:
+            - name: workload-resources
+              mountPath: /workload-resources
+      volumes:
+        - name: workload-resources
+          persistentVolumeClaim:
+            claimName: file-uploader-pvc
