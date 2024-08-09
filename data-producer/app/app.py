@@ -33,7 +33,7 @@ class DataProducer:
     def produce_data(self, topic):
         logger.info(f"Starting data production for topic: {topic}")
         try:
-            with open(f"test-data/sample_data.json", 'r') as file:
+            with open(f"test-data/generated_records.json", 'r') as file:
                 data = json.load(file)
                 for record in data:
                     self.producer.send(topic, value=record)

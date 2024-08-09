@@ -1,72 +1,289 @@
 [
     {
-        "timestamp": 1619000040000,
-        "metric": "temperature.celsius::number",
-        "value": 19.677089583816606,
+        "timestamp": 1619000640000,
+        "metric": "humidity.percent::number",
+        "value": 44.123456789012345,
         "source": "device_MTYzODg3NDIzNw==",
         "tags": ["roomId=RoomA", "gateway=demo1"]
     },
     {
-        "timestamp": 1619000100000,
+        "timestamp": 1619000700000,
+        "metric": "temperature.celsius::number",
+        "value": 22.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619000760000,
+        "metric": "humidity.percent::number",
+        "value": 48.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619000820000,
+        "metric": "temperature.celsius::number",
+        "value": 23.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619000880000,
+        "metric": "humidity.percent::number",
+        "value": 55.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619000940000,
         "metric": "temperature.celsius::number",
         "value": 20.123456789012345,
         "source": "device_MTYzODg3NDIzNw==",
         "tags": ["roomId=RoomB", "gateway=demo2"]
     },
     {
-        "timestamp": 1619000160000,
+        "timestamp": 1619001000000,
         "metric": "humidity.percent::number",
-        "value": 45.123456789012345,
+        "value": 49.123456789012345,
         "source": "device_MTYzODg3NDIzNw==",
         "tags": ["roomId=RoomA", "gateway=demo1"]
     },
     {
-        "timestamp": 1619000220000,
+        "timestamp": 1619001060000,
+        "metric": "temperature.celsius::number",
+        "value": 22.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619001120000,
+        "metric": "humidity.percent::number",
+        "value": 51.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619001180000,
         "metric": "temperature.celsius::number",
         "value": 21.987654321098765,
         "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619001240000,
+        "metric": "humidity.percent::number",
+        "value": 53.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
         "tags": ["roomId=RoomC", "gateway=demo3"]
     },
     {
-        "timestamp": 1619000280000,
+        "timestamp": 1619001300000,
+        "metric": "temperature.celsius::number",
+        "value": 23.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619001360000,
+        "metric": "humidity.percent::number",
+        "value": 47.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619001420000,
+        "metric": "temperature.celsius::number",
+        "value": 24.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619001480000,
+        "metric": "humidity.percent::number",
+        "value": 52.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619001540000,
+        "metric": "temperature.celsius::number",
+        "value": 21.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619001600000,
+        "metric": "humidity.percent::number",
+        "value": 50.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619001660000,
+        "metric": "temperature.celsius::number",
+        "value": 19.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619001720000,
+        "metric": "humidity.percent::number",
+        "value": 54.123456789012345,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619001780000,
+        "metric": "temperature.celsius::number",
+        "value": 22.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619001840000,
+        "metric": "humidity.percent::number",
+        "value": 49.987654321098765,
+        "source": "device_MTYzODg3NDIzNw==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619001900000,
+        "metric": "temperature.celsius::number",
+        "value": 20.678934567891234,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619001960000,
+        "metric": "humidity.percent::number",
+        "value": 47.234567890123456,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619002020000,
+        "metric": "temperature.celsius::number",
+        "value": 23.987654321098765,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619002080000,
+        "metric": "humidity.percent::number",
+        "value": 52.345678901234567,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619002140000,
+        "metric": "temperature.celsius::number",
+        "value": 21.234567890123456,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619002200000,
+        "metric": "humidity.percent::number",
+        "value": 48.123456789012345,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619002260000,
+        "metric": "temperature.celsius::number",
+        "value": 22.67890123456789,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619002320000,
+        "metric": "humidity.percent::number",
+        "value": 50.234567890123456,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619002380000,
+        "metric": "temperature.celsius::number",
+        "value": 24.123456789012345,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619002440000,
+        "metric": "humidity.percent::number",
+        "value": 51.987654321098765,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619002500000,
+        "metric": "temperature.celsius::number",
+        "value": 19.234567890123456,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619002560000,
+        "metric": "humidity.percent::number",
+        "value": 46.123456789012345,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619002620000,
+        "metric": "temperature.celsius::number",
+        "value": 21.987654321098765,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomA", "gateway=demo1"]
+    },
+    {
+        "timestamp": 1619002680000,
+        "metric": "humidity.percent::number",
+        "value": 53.234567890123456,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
+    },
+    {
+        "timestamp": 1619002740000,
+        "metric": "temperature.celsius::number",
+        "value": 23.234567890123456,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619002800000,
         "metric": "humidity.percent::number",
         "value": 50.987654321098765,
-        "source": "device_MTYzODg3NDIzNw==",
-        "tags": ["roomId=RoomB", "gateway=demo2"]
-    },
-    {
-        "timestamp": 1619000340000,
-        "metric": "temperature.celsius::number",
-        "value": 18.123456789012345,
-        "source": "device_MTYzODg3NDIzNw==",
+        "source": "device_MTYzODg3NDIzOA==",
         "tags": ["roomId=RoomA", "gateway=demo1"]
     },
     {
-        "timestamp": 1619000400000,
-        "metric": "humidity.percent::number",
-        "value": 55.123456789012345,
-        "source": "device_MTYzODg3NDIzNw==",
-        "tags": ["roomId=RoomC", "gateway=demo3"]
-    },
-    {
-        "timestamp": 1619000460000,
+        "timestamp": 1619002860000,
         "metric": "temperature.celsius::number",
-        "value": 19.987654321098765,
-        "source": "device_MTYzODg3NDIzNw==",
+        "value": 22.123456789012345,
+        "source": "device_MTYzODg3NDIzOA==",
         "tags": ["roomId=RoomB", "gateway=demo2"]
     },
     {
-        "timestamp": 1619000520000,
+        "timestamp": 1619002920000,
         "metric": "humidity.percent::number",
-        "value": 60.987654321098765,
-        "source": "device_MTYzODg3NDIzNw==",
+        "value": 49.123456789012345,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomC", "gateway=demo3"]
+    },
+    {
+        "timestamp": 1619002980000,
+        "metric": "temperature.celsius::number",
+        "value": 20.67890123456789,
+        "source": "device_MTYzODg3NDIzOA==",
         "tags": ["roomId=RoomA", "gateway=demo1"]
     },
     {
-        "timestamp": 1619000580000,
-        "metric": "temperature.celsius::number",
-        "value": 17.123456789012345,
-        "source": "device_MTYzODg3NDIzNw==",
-        "tags": ["roomId=RoomC", "gateway=demo3"]
+        "timestamp": 1619003040000,
+        "metric": "humidity.percent::number",
+        "value": 47.987654321098765,
+        "source": "device_MTYzODg3NDIzOA==",
+        "tags": ["roomId=RoomB", "gateway=demo2"]
     }
 ]
