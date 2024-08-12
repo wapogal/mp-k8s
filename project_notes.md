@@ -14,6 +14,8 @@
     - helm install my-release nfs-ganesha-server-and-external-provisioner/nfs-server-provisioner
     - https://github.com/kubernetes-sigs/nfs-ganesha-server-and-external-provisioner/tree/master/charts/nfs-server-provisioner
     - make sur enodes have sudo apt-get install nfs-common
+- Prometheus
+- https://devopscube.com/setup-prometheus-monitoring-on-kubernetes/
 
 ## RUST things
 - ```bash cargo install wasm-pack```
@@ -52,6 +54,7 @@ We need NFS to get the WASM files to the right place even across nodes.
 
 ## WASM quirks
 - Can't use kubernete's DNS resolver, need to make sure the pod gets the IP itself, not the host
+
 
 ## TODO's
 ### Essential
