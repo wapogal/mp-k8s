@@ -1,7 +1,7 @@
 __pycache__/
 /host-folder/
 .ds_store
+/kubernetes-prometheus/
 
 # Generated files
 wasm-worloads/*/target/
-cluster-config.yaml
