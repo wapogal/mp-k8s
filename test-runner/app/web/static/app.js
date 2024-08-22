@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const socket = io();
 
-    const runButtons = document.querySelectorAll('.run-button');
-    const deleteButtons = document.querySelectorAll('.delete-button');
-    const showButtons = document.querySelectorAll('.show-button');
     const logArea = document.getElementById('log-area');
     const testCaseViewer = document.getElementById('test-case-viewer');
     const testCaseContent = document.getElementById('test-case-content');
@@ -13,7 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveTitleButton = document.querySelector('.save-title-button');
     const cancelTitleButton = document.querySelector('.cancel-title-button');
     const saveContentButton = document.querySelector('.save-content-button');
-    const cancelContentButton = document.querySelector('.cancel-content-button');
+    const revertContentButton = document.querySelector('.revert-content-button');
+    const runContentButton = document.querySelector('.run-content-button');
     const viewerActions = document.querySelector('.viewer-actions');
     const testCasesList = document.querySelector('.test-cases-list');
 
@@ -68,11 +66,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     const testCaseItem = document.createElement('div');
                     testCaseItem.classList.add('test-case-item');
                     testCaseItem.innerHTML = `
-                        <span>${testCase}</span>
+                        <div class="test-case-name-container">
+                            <span class="test-case-name">${testCase}</span>
+                        </div>
                         <div class="test-case-actions">
                             <button class="run-button" title="Run">&#9658;</button>
                             <button class="delete-button" title="Delete">&#128465;</button>
-                            <button class="show-button" title="Show test case">&#128269;</button>
                         </div>
                     `;
                     testCasesList.appendChild(testCaseItem);
@@ -83,26 +82,21 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const attachEventListeners = () => {
-        document.querySelectorAll('.run-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const testCaseName = this.parentElement.parentElement.querySelector('span').textContent;
-                socket.emit('start_test', { test_case_name: testCaseName });
+        document.querySelectorAll('.test-case-item').forEach(item => {
+            item.addEventListener('click', function(event) {
+                if (!event.target.closest('.run-button') && !event.target.closest('.delete-button')) {
+                    const testCaseName = this.querySelector('.test-case-name').textContent;
+                    socket.emit('show_test_case', { test_case_name: testCaseName });
+                }
             });
         });
 
         document.querySelectorAll('.delete-button').forEach(button => {
             button.addEventListener('click', function() {
-                const testCaseName = this.parentElement.parentElement.querySelector('span').textContent;
+                const testCaseName = this.parentElement.parentElement.querySelector('.test-case-name').textContent;
                 if (confirm(`Are you sure you want to delete the test case "${testCaseName}"?`)) {
                     socket.emit('delete_test_case', { test_case_name: testCaseName });
                 }
-            });
-        });
-
-        document.querySelectorAll('.show-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const testCaseName = this.parentElement.parentElement.querySelector('span').textContent;
-                socket.emit('show_test_case', { test_case_name: testCaseName });
             });
         });
     };
@@ -160,9 +154,15 @@ document.addEventListener('DOMContentLoaded', function() {
         viewerTitle.value = data.test_case_name;
         viewerTitle.dataset.oldName = data.test_case_name;
         testCaseContent.value = data.content;
+        testCaseContent.style.height = "calc(100vh - 380px)";
         testCaseContent.removeAttribute('readonly');
         testCaseViewer.classList.remove('hidden');
         viewerActions.classList.remove('hidden');
+    });
+
+    runContentButton.addEventListener('click', function() {
+        const testCaseName = viewerTitle.dataset.oldName;
+        socket.emit('start_test', { test_case_name: testCaseName });
     });
 
     saveContentButton.addEventListener('click', function() {
@@ -183,12 +183,11 @@ document.addEventListener('DOMContentLoaded', function() {
                   alert(data.message);
               }
               testCaseContent.setAttribute('readonly', 'readonly');
-              viewerActions.classList.add('hidden');
           })
           .catch(error => console.error('Error:', error));
     });
 
-    cancelContentButton.addEventListener('click', function() {
+    revertContentButton.addEventListener('click', function() {
         const testCaseName = viewerTitle.dataset.oldName;
         socket.emit('show_test_case', { test_case_name: testCaseName });
     });
