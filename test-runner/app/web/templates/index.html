@@ -12,11 +12,13 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <h2>Test Cases</h2>
-                <!-- Upload Form -->
-                <form id="upload-form" action="/upload_test_case" method="post" enctype="multipart/form-data">
-                    <input type="file" name="file" id="file-input" accept=".yaml" style="display: none;">
-                    <button type="button" id="upload-button" class="add-button" title="Add new test case">+</button>
-                </form>
+                <div class="sidebar-controls">
+                    <button type="button" id="create-button" class="add-button" title="Create new test case">+</button>
+                    <form id="upload-form" action="/upload_test_case" method="post" enctype="multipart/form-data" style="display: inline;">
+                        <input type="file" name="file" id="file-input" accept=".yaml" style="display: none;">
+                        <button type="button" id="upload-button" class="upload-button" title="Upload new test case">&#128190;</button>
+                    </form>
+                </div>
             </div>
             <div class="test-cases-list">
                 {% for test_case in test_cases %}
@@ -37,10 +39,17 @@
 
             <div id="test-case-viewer" class="hidden">
                 <div class="viewer-header">
-                    <h3 id="viewer-title">Test Case Content</h3>
+                    <input type="text" id="viewer-title" readonly>
+                    <button class="edit-title-button" title="Edit test case name">&#9998;</button>
+                    <button class="save-title-button hidden" title="Save test case name">Save</button>
+                    <button class="cancel-title-button hidden" title="Cancel editing">Cancel</button>
                     <button class="close-viewer" title="Close">X</button>
                 </div>
-                <pre id="test-case-content"></pre>
+                <textarea id="test-case-content" readonly></textarea>
+                <div class="viewer-actions hidden">
+                    <button class="save-content-button" title="Save changes">Save</button>
+                    <button class="cancel-content-button" title="Cancel changes">Cancel</button>
+                </div>
             </div>
         </div>
     </div>

@@ -53,6 +53,56 @@ def get_test_cases():
     test_cases = list_test_cases()
     return jsonify({'test_cases': test_cases})
 
+@app.route('/rename_test_case', methods=['POST'])
+def rename_test_case():
+    data = request.get_json()
+    old_name = data.get('old_name')
+    new_name = data.get('new_name')
+
+    if not old_name or not new_name or not new_name.endswith('.yaml'):
+        return jsonify({'status': 'error', 'message': 'Invalid filename.'}), 400
+
+    old_path = os.path.join(TEST_CASES_DIR, old_name)
+    new_path = os.path.join(TEST_CASES_DIR, new_name)
+
+    try:
+        os.rename(old_path, new_path)
+        return jsonify({'status': 'success', 'message': f'Test case renamed to "{new_name}" successfully.'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'Error renaming test case: {str(e)}'}), 500
+
+@app.route('/create_test_case', methods=['POST'])
+def create_test_case():
+    data = request.get_json()
+    filename = data.get('filename')
+
+    if not filename or not filename.endswith('.yaml'):
+        return jsonify({'status': 'error', 'message': 'Invalid filename.'}), 400
+
+    file_path = os.path.join(TEST_CASES_DIR, filename)
+
+    try:
+        with open(file_path, 'w') as f:
+            f.write('# New test case\nsteps:\n  - type: workload\n    workloadType: wasm\n    wasmFiles: []\n')
+        return jsonify({'status': 'success', 'message': f'Test case "{filename}" created successfully.'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'Error creating test case: {str(e)}'}), 500
+
+@app.route('/save_test_case', methods=['POST'])
+def save_test_case():
+    data = request.get_json()
+    test_case_name = data.get('test_case_name')
+    content = data.get('content')
+
+    file_path = os.path.join(TEST_CASES_DIR, test_case_name)
+
+    try:
+        with open(file_path, 'w') as f:
+            f.write(content)
+        return jsonify({'status': 'success', 'message': f'Test case "{test_case_name}" saved successfully.'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'Error saving test case: {str(e)}'}), 500
+
 @app.route('/upload_test_case', methods=['POST'])
 def upload_test_case():
     if 'file' not in request.files:
@@ -99,10 +149,14 @@ def handle_delete_test_case(data):
 @socketio.on('show_test_case')
 def handle_show_test_case(data):
     test_case_name = data['test_case_name']
-    print(f"Showing test case {test_case_name}...")
-    with open(os.path.join(TEST_CASES_DIR, test_case_name), 'r') as file:
-        content = file.read()
-    emit('display_test_case', {'content': content})
+    try:
+        with open(os.path.join(TEST_CASES_DIR, test_case_name), 'r') as file:
+            content = file.read()
+        emit('display_test_case', {'test_case_name': test_case_name, 'content': content})
+    except FileNotFoundError:
+        emit('update_log', {'log': f'Test case "{test_case_name}" not found.'})
+    except Exception as e:
+        emit('update_log', {'log': f'Error reading test case "{test_case_name}": {str(e)}'})
 
 def list_test_cases():
     files = [f for f in os.listdir(TEST_CASES_DIR) if f.endswith('.yaml')]

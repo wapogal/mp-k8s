@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const socket = io();  // Initialize the WebSocket connection
+    const socket = io();
 
     const runButtons = document.querySelectorAll('.run-button');
     const deleteButtons = document.querySelectorAll('.delete-button');
@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const testCaseContent = document.getElementById('test-case-content');
     const viewerTitle = document.getElementById('viewer-title');
     const closeViewer = document.querySelector('.close-viewer');
+    const editTitleButton = document.querySelector('.edit-title-button');
+    const saveTitleButton = document.querySelector('.save-title-button');
+    const cancelTitleButton = document.querySelector('.cancel-title-button');
+    const saveContentButton = document.querySelector('.save-content-button');
+    const cancelContentButton = document.querySelector('.cancel-content-button');
+    const viewerActions = document.querySelector('.viewer-actions');
     const testCasesList = document.querySelector('.test-cases-list');
 
     document.getElementById('upload-button').addEventListener('click', function() {
@@ -23,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }).then(response => response.json())
           .then(data => {
               if (data.status === 'success') {
-                  refreshTestCasesList();  // Refresh the list after a successful upload
+                  refreshTestCasesList();
               } else {
                   alert(data.message);
               }
@@ -31,11 +37,33 @@ document.addEventListener('DOMContentLoaded', function() {
           .catch(error => console.error('Error:', error));
     });
 
+    document.getElementById('create-button').addEventListener('click', function() {
+        const newFileName = prompt("Enter the name of the new test case file (with .yaml extension):");
+        if (newFileName) {
+            fetch('/create_test_case', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ filename: newFileName })
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.status === 'success') {
+                      refreshTestCasesList();
+                      socket.emit('show_test_case', { test_case_name: newFileName });
+                  } else {
+                      alert(data.message);
+                  }
+              })
+              .catch(error => console.error('Error:', error));
+        }
+    });
+
     const refreshTestCasesList = () => {
         fetch('/get_test_cases')
             .then(response => response.json())
             .then(data => {
-                testCasesList.innerHTML = '';  // Clear the existing list
+                testCasesList.innerHTML = '';
                 data.test_cases.forEach(testCase => {
                     const testCaseItem = document.createElement('div');
                     testCaseItem.classList.add('test-case-item');
@@ -50,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     testCasesList.appendChild(testCaseItem);
                 });
 
-                // Re-attach event listeners after refreshing the list
                 attachEventListeners();
             });
     };
@@ -80,16 +107,90 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    attachEventListeners();  // Attach event listeners initially
+    attachEventListeners();
 
     closeViewer.addEventListener('click', function() {
         testCaseViewer.classList.add('hidden');
     });
 
+    editTitleButton.addEventListener('click', function() {
+        viewerTitle.removeAttribute('readonly');
+        viewerTitle.focus();
+        editTitleButton.classList.add('hidden');
+        saveTitleButton.classList.remove('hidden');
+        cancelTitleButton.classList.remove('hidden');
+    });
+
+    saveTitleButton.addEventListener('click', function() {
+        const oldName = viewerTitle.dataset.oldName;
+        const newName = viewerTitle.value;
+
+        fetch('/rename_test_case', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ old_name: oldName, new_name: newName })
+        }).then(response => response.json())
+          .then(data => {
+              if (data.status === 'success') {
+                  viewerTitle.dataset.oldName = newName;
+                  refreshTestCasesList();
+              } else {
+                  alert(data.message);
+                  viewerTitle.value = oldName;
+              }
+              viewerTitle.setAttribute('readonly', 'readonly');
+              saveTitleButton.classList.add('hidden');
+              cancelTitleButton.classList.add('hidden');
+              editTitleButton.classList.remove('hidden');
+          })
+          .catch(error => console.error('Error:', error));
+    });
+
+    cancelTitleButton.addEventListener('click', function() {
+        viewerTitle.value = viewerTitle.dataset.oldName;
+        viewerTitle.setAttribute('readonly', 'readonly');
+        saveTitleButton.classList.add('hidden');
+        cancelTitleButton.classList.add('hidden');
+        editTitleButton.classList.remove('hidden');
+    });
+
     socket.on('display_test_case', function(data) {
-        viewerTitle.textContent = data.test_case_name; // Update the title with the file name
-        testCaseContent.textContent = data.content;
+        viewerTitle.value = data.test_case_name;
+        viewerTitle.dataset.oldName = data.test_case_name;
+        testCaseContent.value = data.content;
+        testCaseContent.removeAttribute('readonly');
         testCaseViewer.classList.remove('hidden');
+        viewerActions.classList.remove('hidden');
+    });
+
+    saveContentButton.addEventListener('click', function() {
+        const testCaseName = viewerTitle.dataset.oldName;
+        const newContent = testCaseContent.value;
+
+        fetch('/save_test_case', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ test_case_name: testCaseName, content: newContent })
+        }).then(response => response.json())
+          .then(data => {
+              if (data.status === 'success') {
+                  alert('Test case saved successfully.');
+              } else {
+                  alert(data.message);
+              }
+              testCaseContent.setAttribute('readonly', 'readonly');
+              viewerActions.classList.add('hidden');
+          })
+          .catch(error => console.error('Error:', error));
+    });
+
+    cancelContentButton.addEventListener('click', function() {
+        const testCaseName = viewerTitle.dataset.oldName;
+        socket.emit('show_test_case', { test_case_name: testCaseName });
     });
 
     socket.on('update_log', function(data) {
@@ -98,6 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     socket.on('test_case_deleted', function() {
-        refreshTestCasesList();  // Refresh the list after a test case is deleted
+        refreshTestCasesList();
     });
 });

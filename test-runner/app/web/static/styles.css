@@ -21,7 +21,7 @@ body {
 }
 
 .sidebar {
-    width: 400px;  /* Make the sidebar wider */
+    width: 400px;
     background-color: #f7f7f7;
     padding: 10px;
     display: flex;
@@ -42,17 +42,25 @@ body {
     font-size: 18px;
 }
 
-.add-button {
+.sidebar-controls {
+    display: flex;
+    align-items: center;
+}
+
+.add-button,
+.upload-button {
     font-size: 20px;
     color: #007bff;
     background-color: transparent;
     border: none;
     cursor: pointer;
     padding: 0;
+    margin-left: 10px;
     transition: color 0.3s ease;
 }
 
-.add-button:hover {
+.add-button:hover,
+.upload-button:hover {
     color: #0056b3;
 }
 
@@ -151,24 +159,90 @@ body {
     margin: 0;
 }
 
+.viewer-header input[type="text"] {
+    font-size: 18px;
+    border: none;
+    background-color: transparent;
+    width: calc(100% - 100px);
+}
+
+.viewer-header input[readonly] {
+    color: #333;
+    cursor: default;
+}
+
+.viewer-header .edit-title-button,
+.viewer-header .save-title-button,
+.viewer-header .cancel-title-button,
 .close-viewer {
     font-size: 16px;
     background-color: transparent;
     border: none;
     cursor: pointer;
-    color: #dc3545;
+    color: #007bff;
+    margin-left: 10px;
     transition: color 0.3s ease;
+}
+
+.close-viewer {
+    color: #dc3545;
 }
 
 .close-viewer:hover {
     color: #c82333;
 }
 
+.edit-title-button:hover,
+.save-title-button:hover,
+.cancel-title-button:hover {
+    color: #0056b3;
+}
+
 .hidden {
     display: none;
 }
 
-pre {
-    white-space: pre-wrap;
-    word-wrap: break-word;
+textarea {
+    width: 100%;
+    height: 300px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 14px;
+    font-family: monospace;
+    background-color: #f7f7f7;
+    border-radius: 5px;
+    resize: none;
+}
+
+.viewer-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.viewer-actions button {
+    margin-left: 10px;
+    padding: 8px 12px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.save-content-button {
+    background-color: #28a745;
+    color: #ffffff;
+}
+
+.save-content-button:hover {
+    background-color: #218838;
+}
+
+.cancel-content-button {
+    background-color: #dc3545;
+    color: #ffffff;
+}
+
+.cancel-content-button:hover {
+    background-color: #c82333;
 }
