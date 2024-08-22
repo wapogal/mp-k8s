@@ -1,0 +1,26 @@
+steps:
+  - type: workload
+    workloadType: wasm
+    workloads: [http_test.wasm]
+    selection: in-order #in-order or random
+    count: 10 #How many workloads to fire off
+    spread: even #even, random, ramp-up, ramp-down
+    averageSpread: 10 #How many seconds to spread out the workloads on average
+  - type: wait
+    seconds: 10
+  - type: workload
+    workloadType: wasm
+    workloads: [http_test.wasm]
+    selection: in-order #in-order or random
+    count: 5 #How many workloads to fire off
+    spread: random #even, random, ramp-up, ramp-down
+    averageSpread: 20 #How many seconds to spread out the workloads on average
+  - type: wait
+    seconds: 10
+  - type: workload
+    workloadType: container
+    workloads: [wapogal/http-test:latest]
+    selection: random #in-order or random
+    count: 5 #How many workloads to fire off
+    spread: even #even, random, ramp-up, ramp-down
+    averageSpread: 20 #How many seconds to spread out the workloads on average

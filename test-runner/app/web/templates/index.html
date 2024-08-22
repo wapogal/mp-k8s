@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Runner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon"> 
+</head>
+<body>
+    <div id="log-area"></div>
+
+    <div id="controls">
+        <select id="test-case-selector">
+            {% for test_case in test_cases %}
+            <option value="{{ test_case }}">{{ test_case }}</option>
+            {% endfor %}
+        </select>
+        <button id="run-button">Run</button>
+        <span id="alert">A test is already running!</span>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

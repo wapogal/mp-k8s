@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-runner-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-runner
+  template:
+    metadata:
+      labels:
+        app: test-runner
+    spec:
+      containers:
+      - name: test-runner
+        image: wapogal/test-runner:latest 
+        imagePullPolicy: Always
+        env:
+        - name: FILE_UPLOADER_IP
+          value: http://file-uploader-service.default.svc.cluster.local
+        ports:
+        - containerPort: 5000

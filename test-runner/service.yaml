@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-runner-service
+spec:
+  selector:
+    app:  test-runner
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+      nodePort: 30083
+  type: NodePort

@@ -1,0 +1,6 @@
+kubernetes
+shortuuid
+pyyaml
+requests
+flask
+flask-socketio
