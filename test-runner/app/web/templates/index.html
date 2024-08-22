@@ -4,20 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Runner</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon"> 
 </head>
 <body>
-    <div id="log-area"></div>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Test Cases</h2>
+                <!-- Upload Form -->
+                <form id="upload-form" action="/upload_test_case" method="post" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input" accept=".yaml" style="display: none;">
+                    <button type="button" id="upload-button" class="add-button" title="Add new test case">+</button>
+                </form>
+            </div>
+            <div class="test-cases-list">
+                {% for test_case in test_cases %}
+                <div class="test-case-item">
+                    <span>{{ test_case }}</span>
+                    <div class="test-case-actions">
+                        <button class="run-button" title="Run">&#9658;</button>
+                        <button class="delete-button" title="Delete">&#128465;</button>
+                        <button class="show-button" title="Inspect">&#128269;</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
 
-    <div id="controls">
-        <select id="test-case-selector">
-            {% for test_case in test_cases %}
-            <option value="{{ test_case }}">{{ test_case }}</option>
-            {% endfor %}
-        </select>
-        <button id="run-button">Run</button>
-        <span id="alert">A test is already running!</span>
+        <div class="main-content">
+            <div id="log-area"></div>
+
+            <div id="test-case-viewer" class="hidden">
+                <div class="viewer-header">
+                    <h3 id="viewer-title">Test Case Content</h3>
+                    <button class="close-viewer" title="Close">X</button>
+                </div>
+                <pre id="test-case-content"></pre>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>

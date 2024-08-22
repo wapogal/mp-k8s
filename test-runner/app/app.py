@@ -48,12 +48,55 @@ sys.stderr = ErrorLogger(socketio)
 def index():
     return render_template('index.html', test_cases=list_test_cases())
 
+@app.route('/upload_test_case', methods=['POST'])
+def upload_test_case():
+    if 'file' not in request.files:
+        return jsonify({'status': 'error', 'message': 'No file part in the request'}), 400
+
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'status': 'error', 'message': 'No selected file'}), 400
+
+    if not file.filename.endswith('.yaml'):
+        return jsonify({'status': 'error', 'message': 'Invalid file type. Only YAML files are allowed.'}), 400
+
+    try:
+        file_path = os.path.join(TEST_CASES_DIR, file.filename)
+        file.save(file_path)
+        return jsonify({'status': 'success', 'message': f'Test case "{file.filename}" uploaded successfully.'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'Error saving file: {str(e)}'}), 500
+
 @socketio.on('start_test')
 def handle_start_test(data):
     test_case_name = data['test_case_name']
     print(f"Starting test case {test_case_name}...")
     thread = threading.Thread(target=run_test_case, args=(test_case_name,))
     thread.start()
+
+@socketio.on('delete_test_case')
+def handle_delete_test_case(data):
+    test_case_name = data['test_case_name']
+    print(f"Deleting test case {test_case_name}...")
+    file_path = os.path.join(TEST_CASES_DIR, test_case_name)
+
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            emit('update_log', {'log': f'Test case "{test_case_name}" deleted successfully.'})
+        else:
+            emit('update_log', {'log': f'Test case "{test_case_name}" not found.'})
+    except Exception as e:
+        emit('update_log', {'log': f'Error deleting test case "{test_case_name}": {str(e)}'})
+
+@socketio.on('show_test_case')
+def handle_show_test_case(data):
+    test_case_name = data['test_case_name']
+    print(f"Showing test case {test_case_name}...")
+    with open(os.path.join(TEST_CASES_DIR, test_case_name), 'r') as file:
+        content = file.read()
+    emit('display_test_case', {'content': content})
 
 def list_test_cases():
     files = [f for f in os.listdir(TEST_CASES_DIR) if f.endswith('.yaml')]
@@ -145,7 +188,7 @@ def heartbeat():
         time.sleep(20)
 
 if __name__ == "__main__":
-    # thread = threading.Thread(target=heartbeat) # for testing
-    # thread.daemon = True 
-    # thread.start()
+    thread = threading.Thread(target=heartbeat) # for testing
+    thread.daemon = True 
+    thread.start()
     socketio.run(app, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
