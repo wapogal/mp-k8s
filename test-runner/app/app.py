@@ -48,6 +48,11 @@ sys.stderr = ErrorLogger(socketio)
 def index():
     return render_template('index.html', test_cases=list_test_cases())
 
+@app.route('/get_test_cases', methods=['GET'])
+def get_test_cases():
+    test_cases = list_test_cases()
+    return jsonify({'test_cases': test_cases})
+
 @app.route('/upload_test_case', methods=['POST'])
 def upload_test_case():
     if 'file' not in request.files:
@@ -85,6 +90,7 @@ def handle_delete_test_case(data):
         if os.path.exists(file_path):
             os.remove(file_path)
             emit('update_log', {'log': f'Test case "{test_case_name}" deleted successfully.'})
+            emit('test_case_deleted', broadcast=True)  # Notify clients that the test case was deleted
         else:
             emit('update_log', {'log': f'Test case "{test_case_name}" not found.'})
     except Exception as e:
@@ -188,7 +194,7 @@ def heartbeat():
         time.sleep(20)
 
 if __name__ == "__main__":
-    thread = threading.Thread(target=heartbeat) # for testing
-    thread.daemon = True 
-    thread.start()
+    #thread = threading.Thread(target=heartbeat) # for testing
+    #thread.daemon = True 
+    #thread.start()
     socketio.run(app, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
