@@ -13,9 +13,9 @@
 - NFS
     - helm install my-release nfs-ganesha-server-and-external-provisioner/nfs-server-provisioner
     - https://github.com/kubernetes-sigs/nfs-ganesha-server-and-external-provisioner/tree/master/charts/nfs-server-provisioner
-    - make sur enodes have sudo apt-get install nfs-common
+    - make sure nodes have sudo apt-get install nfs-common
 - Prometheus
-- https://devopscube.com/setup-prometheus-monitoring-on-kubernetes/
+    - https://devopscube.com/setup-prometheus-monitoring-on-kubernetes/
 
 ## RUST things
 - ```bash cargo install wasm-pack```

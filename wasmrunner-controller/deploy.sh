@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Variables
-IMAGE_NAME="wapogal/wasm-runner-controller:latest"
-DEPLOYMENT_NAME="wasm-runner-controller"
+IMAGE_NAME="wapogal/wasmrunner-controller:latest"
+DEPLOYMENT_NAME="wasmrunner-controller"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEPLOYMENT_FILE="${SCRIPT_DIR}/wasm-runner-controller-deployment.yaml"
+DEPLOYMENT_FILE="${SCRIPT_DIR}/deployment.yaml"
 DOCKER_FILE="${SCRIPT_DIR}/dockerfile"
 
 # Delete existing deployment

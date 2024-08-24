@@ -1,7 +1,6 @@
 import random
 import threading
 import time
-import kubernetes
 import os
 import yaml
 import requests

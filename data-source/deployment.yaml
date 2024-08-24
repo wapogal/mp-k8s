@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-source-deployment
+  labels:
+    app: data-source
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-source
+  template:
+    metadata:
+      labels:
+        app: data-source
+    spec:
+      containers:
+      - name: data-source
+        image: wapogal/data-source:latest
+        imagePullPolicy: Always
+        envFrom:
+         - configMapRef:
+             name: kafka-broker-config
+         - configMapRef:
+             name: data-access-config
+         - configMapRef:
+             name: data-source-config

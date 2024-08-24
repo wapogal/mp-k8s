@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: file-uploader-pvc
+  name: workload-store-pvc
 spec:
   accessModes:
     - ReadWriteMany

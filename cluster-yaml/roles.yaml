@@ -1,0 +1,48 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: wasmrunner-full-access
+  namespace: default
+rules:
+- apiGroups: ["example.com"]
+  resources: ["wasmrunners"]
+  verbs: ["get", "list", "watch", "update", "patch", "delete"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: wasmrunner-creator
+  namespace: default
+rules:
+- apiGroups: ["example.com"]
+  resources: ["wasmrunners"]
+  verbs: ["create", "get", "list", "watch"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-full-access
+  namespace: default
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "update", "patch", "delete"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: job-creator
+  namespace: default
+rules:
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["create", "get", "list", "watch"]
+
+
+

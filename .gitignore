@@ -5,3 +5,4 @@ __pycache__/
 
 # Generated files
 wasm-worloads/*/target/
+charts/

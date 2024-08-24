@@ -1,0 +1,59 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: wasmrunner-full-access-rb
+subjects:
+- kind: ServiceAccount
+  name: wasmrunner-controller-sa
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: wasmrunner-full-access
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1 
+kind: ClusterRoleBinding
+metadata:
+  name: wasmrunner-creator-rb
+subjects:
+- kind: ServiceAccount
+  name: workload-receiver-sa
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: wasmrunner-creator
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-creator-rb
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: wasmrunner-controller-sa
+  namespace: default
+roleRef:
+  kind: Role
+  name: pod-full-access
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: job-creator-rb
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: workload-receiver-sa
+  namespace: default
+roleRef:
+  kind: Role
+  name: job-creator
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wasmrunner-controller-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wasmrunner-controller
+  template:
+    metadata:
+      labels:
+        app: wasmrunner-controller
+    spec:
+      serviceAccountName: wasmrunner-controller-sa
+      containers:
+      - name: wasmrunner-controller
+        image: wapogal/wasmrunner-controller:latest
+        envFrom:
+          - configMapRef:
+              name: kafka-broker-config
+          - configMapRef:
+              name: workload-store-config
+          - configMapRef:
+              name: workload-controller-config
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: workload-store
+          mountPath: /workload-resources # This needs to be the same as in the configMap
+      volumes:
+      - name: workload-store
+        persistentVolumeClaim:
+          claimName: workload-store-pvc

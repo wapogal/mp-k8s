@@ -1,0 +1,60 @@
+apiVersion: v1 #TODO check if even useful
+kind: ConfigMap
+metadata:
+  name: workload-store-config
+  namespace: default
+data:
+  WORKLOAD_RESOURCES_DIRECTORY: /workload-resources # This needs to be the same in the workload-receiver deployment, better solution would be using something like helm
+
+---
+
+apiVersion: v1 
+kind: ConfigMap
+metadata:
+  name: kafka-broker-config
+  namespace: default
+data:
+  KAFKA_BROKER: redpanda.redpanda.svc.cluster.local:9093
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-access-config
+  namespace: default
+data:
+  DATA_ACCESS_SERVICE: data-access-service.default.svc.cluster.local:8080
+
+---
+
+apiVersion: v1 
+kind: ConfigMap
+metadata:
+  name: workload-controller-config
+  namespace: default
+data:
+  KAFKA_HTTP_PROXY: redpanda.redpanda.svc.cluster.local:8082
+  WORKLOAD_NOTIFICATION_TOPIC: workload-notification
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-request-config
+  namespace: default
+data:
+  DATA_REQUEST_ROUTE: data-request
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-source-config
+  namespace: default
+data:
+  REGISTRATION_ROUTE: data-source-registration
+  DATA_SOURCES_TOPIC: data-sources
+  DATA_SOURCE_TIMEOUT_SECONDS: "60"

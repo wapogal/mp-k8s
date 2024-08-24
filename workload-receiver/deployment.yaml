@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-receiver-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workload-receiver
+  template:
+    metadata:
+      labels:
+        app: workload-receiver
+    spec:
+      serviceAccountName: workload-receiver-sa
+      containers:
+        - name: workload-receiver
+          image: wapogal/workload-receiver:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: workload-store-config
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5002
+          volumeMounts:
+            - name: workload-resources
+              mountPath: /workload-resources # This needs to be the same in the workload-store-config ConfigMap, better solution would be using something like helm
+      volumes:
+        - name: workload-resources
+          persistentVolumeClaim:
+            claimName: workload-storage-pvc
