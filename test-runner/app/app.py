@@ -17,6 +17,7 @@ if WORKLOAD_RUNNER_IP is None:
 
 # Other constants
 WASM_UPLOAD_URL = WORKLOAD_RUNNER_IP + "/upload"
+CONTAINER_UPLOAD_URL = WORKLOAD_RUNNER_IP + "/start_container_job"
 PERSISTENT_STORAGE_DIR = "/persistant-storage"
 PRECONFIGURED_FILES_DIR = "./preconfigured"
 TEST_CASES_FOLDER = "test-cases"
@@ -193,6 +194,7 @@ def run_workload(step):
     spread = step.get('spread', 'even')
     average_spread = step.get('averageSpread', 0)
     workloads = step['workloads']
+    keep_running = step.get('keepRunning', False)
 
     workload_order = []
     if selection == 'in-order':
@@ -213,18 +215,19 @@ def run_workload(step):
     for i in range(count):
         w = workloads[workload_order[i]]
         if step['workloadType'] == 'wasm':
-            start_wasm_workload(w)
+            start_wasm_workload(w, keep_running)
         elif step['workloadType'] == 'container':
             start_container_workload(w)
         else:
             print(f"Unknown workload type: {step['workloadType']}")
         time.sleep(intervals[i])
 
-def start_wasm_workload(workload):
+def start_wasm_workload(workload, keep_running: bool):
     # send http reques to file uploader
     with open (os.path.join(WASM_FILES_DIR, workload), 'rb') as f:
         files = {'file': f}
-        r = requests.post(WASM_UPLOAD_URL, files=files)
+        form_data = {'delete_after_completion': str(not keep_running).lower()}
+        r = requests.post(WASM_UPLOAD_URL, files=files, data=form_data)
         if r.status_code != 200:
             print(f"Failed to upload wasm file: {workload} with status code: {r.status_code}")
             return
@@ -234,10 +237,14 @@ def start_wasm_workload(workload):
         print(f"Uploaded wasm file: {workload}, running with workload id: {r.json()['workload_id']}")
 
 def start_container_workload(workload):
-    # start container as a job directly through kubernetes
-    # TODO: upload container image instead somehow
-    print(f"Starting container workload: {workload}")
-    print(f"to be implemented")
+    r = requests.post(CONTAINER_UPLOAD_URL, json={'image_name': workload})
+    if r.status_code != 200:
+        print(f"Failed to start container workload: {workload} with status code: {r.status_code}")
+        return
+    if r.json()['status'] != 'success':
+        print(f"Failed to start container workload: {workload}, with message: {r.json()['message']}")
+        return
+    print(f"Started container workload: {workload}, running with workload id: {r.json()['workload_id']}")
     pass
 
 def run_wait(step):

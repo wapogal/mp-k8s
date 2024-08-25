@@ -22,6 +22,13 @@ spec:
                 deleteAfterCompletion:
                   type: boolean
                   default: true
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+      subresources:
+        status: {}
   scope: Namespaced
   names:
     plural: wasmrunners

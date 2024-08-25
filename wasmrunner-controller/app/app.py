@@ -1,7 +1,9 @@
 import json
 import os
 import shutil
+import time
 import traceback
+import threading
 from kafka import KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
 from kubernetes import client, config, watch
@@ -92,6 +94,8 @@ def handle_added_event(event):
     pod_name = f"{wasm_runner_metadata['name']}-pod"
     workload_path = "/wasm/workload.wasm"
 
+    logger.info(f"New runner added: {wasm_runner_metadata['name']}")
+
     pod = V1Pod(
         api_version="v1",
         kind="Pod",
@@ -144,7 +148,7 @@ def handle_added_event(event):
     try:
         logger.info(f"Creating pod {pod_name}")
         core_api.create_namespaced_pod(namespace=wasm_runner_metadata['namespace'], body=pod)
-        logger.info(f"Job {pod_name} created successfully")
+        logger.info(f"Pod {pod_name} created successfully")
         update_wasm_runner_annotations(event['object'], pod_name, "podName")
     except ApiException as e:
         logger.error(f'Error creating {pod_name} with spec: {pod}')
@@ -176,6 +180,8 @@ def update_wasm_runner_annotations(wasm_runner, value, key):
 def handle_deleted_event(event):
     wasm_runner_metadata = event['object']['metadata']
     wasm_runner_spec = event['object']['spec']
+
+    logger.info(f"Runner deleted: {wasm_runner_metadata['name']}")
 
     # Delete pod
     try:
@@ -210,7 +216,11 @@ def handle_modified_event(event):
     wasm_runner_spec = event['object']['spec']
     workload_id = wasm_runner_spec['workloadId']
     pod = core_api.read_namespaced_pod(name=wasm_runner_metadata['annotations']['podName'], namespace=wasm_runner_metadata['namespace'])
-    if pod.status.succeeded:
+    phase = pod.status.phase
+
+    logger.info(f"Runner modified: {wasm_runner_metadata['name']}, phase: {phase}")
+
+    if phase in ['Succeeded', 'Failed']:
         publish_workload_compled_event(workload_id)
         logger.info(f"pod {wasm_runner_metadata['annotations']['podName']} succeeded")
 
@@ -225,9 +235,6 @@ def handle_modified_event(event):
                     propagation_policy='Background'
                 )
             )
-    elif pod.status.failed:
-        publish_workload_error_event(workload_id)
-        logger.info(f"Pod {wasm_runner_metadata['annotations']['podName']} failed")
     
 
 def watch_wasm_runners():
@@ -244,7 +251,7 @@ def watch_wasm_runners():
         logger.info("Watching WasmRunners")
         for event in stream:
             try:
-                logger.info(f"Event: {event}")
+                # logger.info(f"Event: {event}")
                 resource_version = event['object']['metadata']['resourceVersion']
                 if event['type'] == 'ADDED':
                     handle_added_event(event)
@@ -253,8 +260,59 @@ def watch_wasm_runners():
                 elif event['type'] == 'MODIFIED':
                     handle_modified_event(event)
             except Exception as e:
-                logger.error(f"Error handling event: {event}")
+                logger.error(f"Error handling wasmrunner event: {event}")
+                logger.error(traceback.format_exc())
+
+def handle_modified_pod(event):
+    pod = event['object']
+    logger.info(f"Pod modified: {pod.metadata.name} phase: {pod.status.phase}")
+    body = {
+        "status": {
+            "phase": pod.status.phase
+        }
+    }
+    try:
+        object_api.patch_namespaced_custom_object_status(
+            group="example.com",
+            version="v1",
+            namespace=pod.metadata.namespace,
+            plural="wasmrunners",
+            name=pod.metadata.annotations['wasmrunner-name'],
+            body=body
+        )
+        logger.info(f"WasmRunner {pod.metadata.annotations['wasmrunner-name']} status updated successfully")
+    except ApiException as e:
+        logger.error(f"Error updating WasmRunner {pod.metadata.annotations['wasmrunner-name']} status to {pod.status.phase}")
+        logger.error(traceback.format_exc())
+
+    
+
+def watch_pods():
+    resource_version = ''
+    while True:
+        stream = watch.Watch().stream(
+            core_api.list_namespaced_pod,
+            "default",
+            resource_version=resource_version
+        )
+
+        logger.info("Watching Pods")
+        for event in stream:
+            try:
+                if event['object'].metadata.annotations.get('wasmrunner-name', None):
+                # logger.info(f"Event: {event}")
+                    if event['type'] == 'MODIFIED':
+                        handle_modified_pod(event)
+            except Exception as e:
+                # logger.error(f"Error handling pod event: {event}")
                 logger.error(traceback.format_exc())
 
 if __name__ == '__main__':
-    watch_wasm_runners()
+    watch_runners_thread = threading.Thread(target=watch_wasm_runners)
+    watch_pods_thread = threading.Thread(target=watch_pods)
+
+    watch_runners_thread.start()
+    watch_pods_thread.start()
+
+    watch_runners_thread.join()
+    watch_pods_thread.join()

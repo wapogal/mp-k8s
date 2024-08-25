@@ -2,7 +2,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: wasmrunner-full-access
-  namespace: default
 rules:
 - apiGroups: ["example.com"]
   resources: ["wasmrunners"]
@@ -13,8 +12,18 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  name: wasmrunner-status-update
+rules:
+- apiGroups: ["example.com"]
+  resources: ["wasmrunners/status"]
+  verbs: ["get", "list", "watch", "update", "patch", "delete", "create"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
   name: wasmrunner-creator
-  namespace: default
 rules:
 - apiGroups: ["example.com"]
   resources: ["wasmrunners"]
