@@ -9,3 +9,17 @@ spec:
     requests:
       storage: 100Mi
   storageClassName: nfs
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-runner-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+  storageClassName: nfs

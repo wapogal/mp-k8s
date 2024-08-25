@@ -31,17 +31,52 @@ def handle_data_request_thread(resource: str, topic: str):
     producer = KafkaProducer(bootstrap_servers=KAFKA_BROKER, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
     try:
-        file_path = f"{TEST_DATA_DIRECTORY}/{resource}"
+        file_path = f"{TEST_DATA_DIRECTORY}/{resource}.json"
         with open(file_path, 'r') as file:
-            data = json.loads(file)
+            data = json.load(file)
             for record in data:
                 producer.send(topic, value=record)
+        
+        producer.send(topic, value={
+            "status": "completed"
+        })
     except Exception as e:
+        producer.send(topic, value={
+            "status": "error",
+            "error": str(e)
+        })
         logger.error(f"Error publishing data for resource {resource} on topic {topic}")
         logger.error(traceback.format_exc())
     
     producer.flush()
     producer.close()
+
+def register_resources():
+    registration_complete = False
+    max_retries = 5
+    while not registration_complete and max_retries > 0:
+        try:
+            for file in os.listdir(TEST_DATA_DIRECTORY):
+                resource, extension = os.path.splitext(file)
+                if extension == ".json":
+                    r = requests.post(f"http://{DATA_ACCESS_SERVICE}/{REGISTRATION_ROUTE}", json={
+                        "resource": resource,
+                        "data_source_id": DATA_SOURCE_ID
+                    })
+                    if r.status_code != 201:
+                        logger.error(f"Error registering resource {resource} with data source id {DATA_SOURCE_ID}")
+                        logger.error(f"Response: {r.text}")
+                        logger.info("Retrying registration in 5 seconds, retries left: " + str(max_retries))
+                        max_retries -= 1
+                        time.sleep(5)
+                    else:
+                        logger.info(f"Registered resource {resource} with data source id {DATA_SOURCE_ID}")
+                        registration_complete = True
+        except Exception as e:
+            logger.error(f"Error registering resource: {e}")
+            logger.error(traceback.format_exc())
+            max_retries -= 1
+            time.sleep(5)
         
 def main_run():
     consumer = KafkaConsumer(
@@ -52,30 +87,8 @@ def main_run():
     consumer.subscribe([DATA_SOURCES_TOPIC])
 
     # register each file in test data directory as resource at data access service
-    registration_complete = False
-    max_retries = 5
-    while not registration_complete and max_retries > 0:
-        try:
-            for file in os.listdir(TEST_DATA_DIRECTORY):
-                resource = file
-                r = requests.post(f"http://{DATA_ACCESS_SERVICE}/{REGISTRATION_ROUTE}", json={
-                    "resource": resource,
-                    "data_source_id": DATA_SOURCE_ID
-                })
-                if r.status_code != 201:
-                    logger.error(f"Error registering resource {resource} with data source id {DATA_SOURCE_ID}")
-                    logger.error(f"Response: {r.text}")
-                    logger.info("Retrying registration in 5 seconds, retries left: " + str(max_retries))
-                    max_retries -= 1
-                    time.sleep(5)
-                else:
-                    logger.info(f"Registered resource {resource} with data source id {DATA_SOURCE_ID}")
-                    registration_complete = True
-        except Exception as e:
-            logger.error(f"Error registering resource: {e}")
-            logger.error(traceback.format_exc())
-            max_retries -= 1
-            time.sleep(5)
+    register_resources()
+    logger.info("Registered resources")
 
     for message in consumer:
         try:
@@ -103,6 +116,11 @@ def main_run():
                     processes[topic].terminate()
                     processes.pop(topic)
                     logger.info(f"Terminated all processes for topic {topic}")
+            elif message_data["event"] == "registration_required":
+                message_data_source_id = message_data['data_source_id']
+                if DATA_SOURCE_ID == message_data_source_id:
+                    register_resources()
+                    logger.ingo(f"Registered resources in response to registration request")
         except json.JSONDecodeError as e:
             logger.error(f"Error decoding JSON: {e}")
             logger.error(traceback.format_exc())

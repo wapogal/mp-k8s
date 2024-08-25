@@ -10,19 +10,31 @@ from kubernetes.client import V1PodSpec, V1Container, V1VolumeMount, V1Volume, V
 import logging
 import dns.resolver
 
+# Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Env variables
 KAFKA_BROKER = os.environ.get('KAFKA_BROKER')
 KAFKA_HTTP_PROXY = os.environ.get('KAFKA_HTTP_PROXY')
 DATA_REQUEST_TOPIC = os.environ.get('DATA_REQUEST_TOPIC')
 WORKLOAD_NOTIFICATION_TOPIC = os.environ.get('WORKLOAD_NOTIFICATION_TOPIC')
 WORKLOAD_STORE_DIRECTORY = os.environ.get('WORKLOAD_RESOURCES_DIRECTORY')
+DATA_ACCESS_SERVICE = os.environ.get('DATA_ACCESS_SERVICE')
+
+# to resolve the proxy and data access address, for some reason WASM workloads can't resolve it themselves
+def resolve_service_address(unresolved_service_address: str) -> str:
+    h, p = unresolved_service_address.split(':', 1)
+    resolved_service_address = dns.resolver.resolve(h)[0]
+    logger.info(f"Resolved service address: {resolved_service_address}")
+    return str(resolved_service_address) + ":" + p
+
+resolved_proxy_address = resolve_service_address(KAFKA_HTTP_PROXY)
+resolved_data_access_address = resolve_service_address(DATA_ACCESS_SERVICE)
 
 # Kafka
 admin_client = KafkaAdminClient(bootstrap_servers=KAFKA_BROKER)
 producer = KafkaProducer(bootstrap_servers=KAFKA_BROKER, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Kubernetes
 config.load_incluster_config() 
@@ -73,14 +85,6 @@ def publish_workload_error_event(workload_id: str):
         }
     publish_notification(notification)
 
-# resolve the proxy, for some reason WASM workloads can't resolve it themselves
-def resolved_proxy_address() -> str:
-    h, p = KAFKA_HTTP_PROXY.split(':', 1)
-    resolved_proxy_address = dns.resolver.resolve(h)[0]
-    logger.info(f"Resolved proxy address: {resolved_proxy_address}")
-    return resolved_proxy_address + ":" + p
-
-
 def handle_added_event(event):
     wasm_runner_metadata = event['object']['metadata']
     wasm_runner_spec = event['object']['spec']
@@ -103,15 +107,17 @@ def handle_added_event(event):
                     name="wasm-runtime",
                     image="wapogal/scratch:latest",
                     command=[workload_path],
-                    envFrom=[
+                    env_from=[
                         V1EnvFromSource(
                             config_map_ref=V1ConfigMapEnvSource(
-                                name="topics-config"
+                                name="data-request-config"
                             )
-                        )
+                        ),
                     ],
                     env=[
-                        V1EnvVar(name= "KAFKA_PROXY_ADDRESS", value=resolved_proxy_address()),
+                        V1EnvVar(name= "KAFKA_PROXY_ADDRESS", value=resolved_proxy_address),
+                        V1EnvVar(name= "DATA_ACCESS_ADDRESS", value=resolved_data_access_address),
+                        V1EnvVar(name= "WORKLOAD_ID", value=wasm_runner_spec['workloadId']),
                     ],
                     volume_mounts=[
                         V1VolumeMount(
@@ -127,7 +133,7 @@ def handle_added_event(event):
                 V1Volume(
                     name="workload-resources",
                     persistent_volume_claim= V1PersistentVolumeClaimVolumeSource(
-                        claim_name="workload-storage-pvc"
+                        claim_name="workload-store-pvc"
                     )
                 ),
             ],

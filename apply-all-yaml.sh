@@ -12,11 +12,6 @@ directories=(
   "workload-receiver"
 )
 
-kubectl delete rolebinding --all
-kubectl delete role --all
-kubectl delete serviceaccount --all
-kubectl delete storageclass --all
-
 # Loop through each directory and apply all YAML files
 for dir in "${directories[@]}"; do
   echo "Applying YAML files in directory: ./$dir"

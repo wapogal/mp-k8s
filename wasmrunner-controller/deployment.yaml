@@ -23,6 +23,8 @@ spec:
               name: workload-store-config
           - configMapRef:
               name: workload-controller-config
+          - configMapRef:
+              name: data-access-config
         imagePullPolicy: Always
         volumeMounts:
         - name: workload-store

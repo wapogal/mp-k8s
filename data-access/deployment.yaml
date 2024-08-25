@@ -27,3 +27,5 @@ spec:
              name: data-request-config
          - configMapRef:
              name: data-source-config
+        ports:
+        - containerPort: 5001

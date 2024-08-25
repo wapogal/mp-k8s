@@ -17,7 +17,14 @@ spec:
         image: wapogal/test-runner:latest 
         imagePullPolicy: Always
         env:
-        - name: FILE_UPLOADER_IP
-          value: http://file-uploader-service.default.svc.cluster.local
+        - name: WORKLOAD_RUNNER_IP
+          value: http://workload-receiver-service.default.svc.cluster.local
         ports:
         - containerPort: 5000
+        volumeMounts:
+          - name: persistant-storage
+            mountPath: /persistant-storage
+      volumes:
+        - name: persistant-storage
+          persistentVolumeClaim:
+            claimName: test-runner-pvc

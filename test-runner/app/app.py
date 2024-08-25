@@ -1,4 +1,6 @@
+import logging
 import random
+import shutil
 import threading
 import time
 import os
@@ -8,16 +10,25 @@ from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 import sys
 
-FILE_UPLOADER_IP = os.environ.get('FILE_UPLOADER_IP')
-if FILE_UPLOADER_IP is None:
-    raise EnvironmentError("FILE_UPLOADER_IP environment variable is not set")
+# Environment variables
+WORKLOAD_RUNNER_IP = os.environ.get('WORKLOAD_RUNNER_IP')
+if WORKLOAD_RUNNER_IP is None:
+    raise EnvironmentError("WORKLOAD_RUNNER_IP environment variable is not set")
 
-WASM_UPLOAD_URL = FILE_UPLOADER_IP + "/upload"
-TEST_CASES_DIR = "./test-cases"
-WASM_FILES_DIR = "./workloads"
+# Other constants
+WASM_UPLOAD_URL = WORKLOAD_RUNNER_IP + "/upload"
+PERSISTENT_STORAGE_DIR = "/persistant-storage"
+PRECONFIGURED_FILES_DIR = "./preconfigured"
+TEST_CASES_FOLDER = "test-cases"
+WASM_FILES_FOLDER = "workloads"
+TEST_CASES_DIR = os.path.join(PERSISTENT_STORAGE_DIR, TEST_CASES_FOLDER)
+WASM_FILES_DIR = os.path.join(PERSISTENT_STORAGE_DIR, WASM_FILES_FOLDER)
 
+# Flask
 app = Flask(__name__, template_folder='web/templates', static_folder='web/static')
 socketio = SocketIO(app)
+app.logger.addHandler(logging.StreamHandler())
+app.logger.setLevel(logging.INFO)
 
 class PrintLogger(object):
     def __init__(self, socketio):
@@ -111,16 +122,25 @@ def upload_test_case():
     
     if file.filename == '':
         return jsonify({'status': 'error', 'message': 'No selected file'}), 400
+    
+    if file.filename.endswith('.yaml'):
+        try:
+            file_path = os.path.join(TEST_CASES_DIR, file.filename)
+            file.save(file_path)
+            return jsonify({'status': 'success', 'message': f'Test case "{file.filename}" uploaded successfully.'})
+        except Exception as e:
+            return jsonify({'status': 'error', 'message': f'Error saving file: {str(e)}'}), 500
+    elif file.filename.endswith('.wasm'):
+        try:
+            file_path = os.path.join(WASM_FILES_DIR, file.filename)
+            file.save(file_path)
+            return jsonify({'status': 'success', 'message': f'Wasm file "{file.filename}" uploaded successfully.'})
+        except Exception as e:
+            return jsonify({'status': 'error', 'message': f'Error saving file: {str(e)}'}), 500
+    else:
+        return jsonify({'status': 'error', 'message': 'Invalid file type. Only YAML and WASM files are allowed.'}), 400
 
-    if not file.filename.endswith('.yaml'):
-        return jsonify({'status': 'error', 'message': 'Invalid file type. Only YAML files are allowed.'}), 400
-
-    try:
-        file_path = os.path.join(TEST_CASES_DIR, file.filename)
-        file.save(file_path)
-        return jsonify({'status': 'success', 'message': f'Test case "{file.filename}" uploaded successfully.'})
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': f'Error saving file: {str(e)}'}), 500
+    
 
 @socketio.on('start_test')
 def handle_start_test(data):
@@ -158,10 +178,12 @@ def handle_show_test_case(data):
         emit('update_log', {'log': f'Error reading test case "{test_case_name}": {str(e)}'})
 
 def list_test_cases():
+    app.logger.info("Listing test cases from " + TEST_CASES_DIR)
     files = [f for f in os.listdir(TEST_CASES_DIR) if f.endswith('.yaml')]
     return files
 
 def load_test_case(file_name):
+    app.logger.info(f"Loading test case {file_name} from {TEST_CASES_DIR}")
     with open(os.path.join(TEST_CASES_DIR, file_name), 'r') as file:
         return yaml.safe_load(file)
 
@@ -246,8 +268,31 @@ def heartbeat():
         i += 1
         time.sleep(20)
 
+def initialize_persistent_storage():
+    app.logger.info("Initializing preconfigured files")
+    preconfigured_test_cases_dir = os.path.join(PRECONFIGURED_FILES_DIR, "test-cases")
+    preconfigured_workloads_dir = os.path.join(PRECONFIGURED_FILES_DIR, "workloads")
+
+    if not os.path.exists(TEST_CASES_DIR):
+        os.makedirs(TEST_CASES_DIR)
+    if not os.path.exists(WASM_FILES_DIR):
+        os.makedirs(WASM_FILES_DIR)
+
+    if os.path.exists(preconfigured_test_cases_dir):
+        app.logger.info("Preconfigured test cases found")
+        for file in os.listdir(preconfigured_test_cases_dir):
+            app.logger.info(f"Copying preconfigured test case: {file}")
+            shutil.copy(os.path.join(preconfigured_test_cases_dir, file), TEST_CASES_DIR)
+    
+    if os.path.exists(preconfigured_workloads_dir):
+        app.logger.info("Preconfigured workloads found")
+        for file in os.listdir(preconfigured_workloads_dir):
+            app.logger.info(f"Copying preconfigured workload: {file}")
+            shutil.copy(os.path.join(preconfigured_workloads_dir, file), WASM_FILES_DIR)
+
 if __name__ == "__main__":
     #thread = threading.Thread(target=heartbeat) # for testing
     #thread.daemon = True 
     #thread.start()
+    initialize_persistent_storage()
     socketio.run(app, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)

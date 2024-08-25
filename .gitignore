@@ -2,6 +2,8 @@ __pycache__/
 /host-folder/
 .ds_store
 /kubernetes-prometheus/
+done.sh
+*/.app_folder_hash
 
 # Generated files
 wasm-worloads/*/target/
