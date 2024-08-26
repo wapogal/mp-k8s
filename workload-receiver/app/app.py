@@ -27,9 +27,9 @@ def index():
 def upload_file():
     # Get things from the request
     file = request.files['file']
-    delete_after_completion = request.json.get('delete_after_completion', 'true').lower() == 'true'
-    timeout = request.json.get('timeout', 60)
-    max_bytes = request.json.get('max_bytes', 1000000) # default 1MB
+    delete_after_completion = request.form.get('delete_after_completion', 'true').lower() == 'true'
+    timeout = int(request.form.get('timeout', 60))
+    max_bytes = int(request.form.get('max_bytes', 1000000)) # default 1MB
     
     # check if the uploaded file is a wasm file
     if not file.filename.endswith(".wasm"):
@@ -180,4 +180,4 @@ def get_status(workload_id):
     return jsonify({'status': 'error', 'message': 'Not implemented anymore'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5002)
+    app.run(host='0.0.0.0', port=5002, debug=True)

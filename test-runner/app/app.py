@@ -261,18 +261,22 @@ def run_workload(step):
     for i in range(count):
         w = workloads[workload_order[i]]
         if step['workloadType'] == 'wasm':
-            start_wasm_workload(w, keep_running)
+            start_wasm_workload(w, keep_running, timeout, max_bytes)
         elif step['workloadType'] == 'container':
-            start_container_workload(w)
+            start_container_workload(w, timeout, max_bytes)
         else:
             print(f"Unknown workload type: {step['workloadType']}")
         time.sleep(intervals[i])
 
-def start_wasm_workload(workload, keep_running: bool):
+def start_wasm_workload(workload, keep_running: bool, timeout: int, max_bytes: int):
     # send http reques to file uploader
     with open (os.path.join(WASM_FILES_DIR, workload), 'rb') as f:
         files = {'file': f}
-        form_data = {'delete_after_completion': str(not keep_running).lower()}
+        form_data = {
+            'delete_after_completion': str(not keep_running).lower(),
+            'timeout': timeout,
+            'max_bytes': max_bytes
+        }
         r = requests.post(WASM_UPLOAD_URL, files=files, data=form_data)
         if r.status_code != 200:
             print(f"Failed to upload wasm file: {workload} with status code: {r.status_code}")
@@ -282,8 +286,12 @@ def start_wasm_workload(workload, keep_running: bool):
             return
         print(f"Uploaded wasm file: {workload}, running with workload id: {r.json()['workload_id']}")
 
-def start_container_workload(workload):
-    r = requests.post(CONTAINER_UPLOAD_URL, json={'image_name': workload})
+def start_container_workload(workload, timeout: int, max_bytes: int):
+    r = requests.post(CONTAINER_UPLOAD_URL, json={
+        'image_name': workload,
+        'timeout': timeout,
+        'max_bytes': max_bytes
+        })
     if r.status_code != 200:
         print(f"Failed to start container workload: {workload} with status code: {r.status_code}")
         return

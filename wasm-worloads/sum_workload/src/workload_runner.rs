@@ -38,7 +38,10 @@ impl WorkloadRunner {
         let workload_id = std::env::var("WORKLOAD_ID").unwrap();
         let timeout = Duration::from_secs(std::env::var("TIMEOUT").unwrap().parse::<u64>().unwrap());
         let max_bytes = std::env::var("MAX_BYTES").unwrap().parse::<u64>().unwrap();
-        event_times.push((Instant::now(), "got env variables".to_string()));
+        event_times.push((Instant::now(), "got env variables:: timeout: ".to_owned() + &timeout.as_secs().to_string()
+            + ", max_bytes: " + &max_bytes.to_string() + ", workload_id: " + &workload_id
+            + ", kafka_proxy_address: " + &kafka_proxy_address + ", data_access_address: " + &data_access_address
+            + ", data_request_route: " + &data_request_route));
 
         let topic_request_url = "http://".to_owned() + &data_access_address + "/" + &data_request_route;
 
@@ -186,13 +189,14 @@ impl WorkloadRunner {
                 e.to_string()
             })?;
         self.log_event(&("topic request finished:: resource: ".to_owned() + resource));
-        println!("res: {:?}", res);
+        
         if !res.status().is_success() {
             self.log_error(&("topic response status was not success:: resource: ".to_owned() + resource + ", status: " + &res.status().to_string()));
             return Err("topic response status was not success".to_string());
         }
 
         let body = res.text().await.map_err(|e| e.to_string())?;
+        
         let messages: Vec<Value> = serde_json::from_str(&body).unwrap_or_else(|_| vec![]);
 
         let (mut final_msg_received, mut offset) = {
