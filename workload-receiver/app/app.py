@@ -105,8 +105,22 @@ def start_container_job():
                                     value=workload_id
                                 ),
                             ],
+                            volume_mounts=[
+                                client.V1VolumeMount(
+                                    name="workload-logs",
+                                    mount_path="/logs",
+                                    sub_path=workload_id
+                                ),
+                            ],
                         ),
-                        
+                    ],
+                    volumes=[
+                        client.V1Volume(
+                            name="workload-logs",
+                            persistent_volume_claim= client.V1PersistentVolumeClaimVolumeSource(
+                                claim_name="workload-logs-pvc"
+                            )
+                        ),
                     ],
                     restart_policy="Never"
                 )

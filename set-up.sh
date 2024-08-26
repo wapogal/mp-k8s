@@ -13,6 +13,8 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add redpanda https://charts.redpanda.com/
 helm repo add nfs-ganesha-server-and-external-provisioner https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
 helm repo add kwasm http://kwasm.sh/kwasm-operator/
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
 
 echo "Updating helm repos"
 helm repo update
@@ -43,6 +45,13 @@ kubectl annotate node --all kwasm.sh/kwasm-node=true
 # NFS
 echo "Installing NFS"
 helm install my-release nfs-ganesha-server-and-external-provisioner/nfs-server-provisioner
+
+# Prometheus
+helm install prometheus prometheus-community/prometheus --namespace monitoring --create-namespace
+
+# Grafana
+helm install grafana grafana/grafana --namespace monitoring --create-namespace
+
 
 echo "Important steps after set-up:"
 echo "Make sure all nodes have nfs-common installed"

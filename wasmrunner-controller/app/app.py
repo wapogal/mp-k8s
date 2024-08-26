@@ -129,6 +129,11 @@ def handle_added_event(event):
                             mount_path="/wasm",
                             sub_path=wasm_runner_spec['workloadId']
                         ),
+                        V1VolumeMount(
+                            name="workload-logs",
+                            mount_path="/logs",
+                            sub_path=wasm_runner_spec['workloadId']
+                        ),
                     ],
                 ),
             ],
@@ -138,6 +143,12 @@ def handle_added_event(event):
                     name="workload-resources",
                     persistent_volume_claim= V1PersistentVolumeClaimVolumeSource(
                         claim_name="workload-store-pvc"
+                    )
+                ),
+                V1Volume(
+                    name="workload-logs",
+                    persistent_volume_claim= V1PersistentVolumeClaimVolumeSource(
+                        claim_name="workload-logs-pvc"
                     )
                 ),
             ],

@@ -8,4 +8,28 @@ spec:
     image: wapogal/debug-pod:latest
     imagePullPolicy: Always
     command: ["sh", "-c", "sleep 3600"]
+    resources:
+      limits:
+        cpu: "250m"
+        memory: "256Mi"
+      requests:
+        cpu: "250m"
+        memory: "256Mi"
+    volumeMounts:
+    - name: workload-logs
+      mountPath: /logs
+    - name: workload-store
+      mountPath: /wasm
+    - name: test-runner
+      mountPath: /test-runner
+  volumes:
+  - name: workload-logs
+    persistentVolumeClaim:
+      claimName: workload-logs-pvc
+  - name: workload-store
+    persistentVolumeClaim:
+      claimName: workload-store-pvc
+  - name: test-runner
+    persistentVolumeClaim:
+      claimName: test-runner-pvc
     

@@ -252,3 +252,38 @@ textarea {
 .revert-content-button:hover {
     background-color: #5a6268;
 }
+
+.workloads-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.workload-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.workload-item:hover {
+    background-color: #f0f0f0;
+}
+
+.delete-wasm-button {
+    background-color: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #dc3545;
+}
+
+.delete-wasm-button:hover {
+    color: #c82333;
+}
