@@ -14,6 +14,8 @@ pub struct WorkloadRunner {
     kafka_proxy_address: String,
     topic_request_url: String,
     workload_id: String,
+    timeout: Duration,
+    max_bytes: u64,
 
     // HTTP client
     client: Client,
@@ -34,6 +36,8 @@ impl WorkloadRunner {
         let data_access_address = std::env::var("DATA_ACCESS_ADDRESS").unwrap();
         let data_request_route = std::env::var("DATA_REQUEST_ROUTE").unwrap();
         let workload_id = std::env::var("WORKLOAD_ID").unwrap();
+        let timeout = Duration::from_secs(std::env::var("TIMEOUT").unwrap().parse::<u64>().unwrap());
+        let max_bytes = std::env::var("MAX_BYTES").unwrap().parse::<u64>().unwrap();
         event_times.push((Instant::now(), "got env variables".to_string()));
 
         let topic_request_url = "http://".to_owned() + &data_access_address + "/" + &data_request_route;
@@ -49,14 +53,22 @@ impl WorkloadRunner {
             kafka_proxy_address,
             topic_request_url,
             workload_id,
+            timeout,
+            max_bytes,
             client,
             input_topic_urls: HashMap::new(),
             output_topic_urls: HashMap::new(),
         }
     }
 
-    pub fn timeout_reached(&self, timeout: Duration) -> bool {
-        Instant::now().duration_since(self.event_times.first().unwrap().0) > timeout
+    pub fn timeout_reached(&mut self) -> bool {
+        if Instant::now().duration_since(self.event_times.first().unwrap().0) > self.timeout {
+            self.log_error("Timeout reached");
+            true
+        }
+        else {
+            false
+        }
     }
 
     fn output_before_exit(&mut self) {
@@ -147,7 +159,7 @@ impl WorkloadRunner {
         if !self.input_topic_urls.contains_key(resource) {
             self.get_input_topic(resource).await?;
         }
-        // Clone or copy the values to work around multiple mutable borrows
+        
         let (final_msg_received, topic_url, offset) = {
             let entry = self.input_topic_urls.get_mut(resource).unwrap();
             (entry.0, entry.1.clone(), entry.2)
@@ -158,13 +170,13 @@ impl WorkloadRunner {
             return Err("final message already received".to_string());
         }
 
-        self.log_event(&("fetching from:: resource: ".to_owned() + resource + ", url: " + &topic_url + ", offset: " + &offset.to_string()));
+        self.log_event(&("requesting from:: resource: ".to_owned() + resource + ", url: " + &topic_url + ", offset: " + &offset.to_string()));
         let res = self.client
             .get(&topic_url)
             .header("Accept", "application/vnd.kafka.json.v2+json")
             .query(&[
                 ("timeout", "1000"),
-                ("max_bytes", "10000000"),  // Make this configurable if necessary
+                ("max_bytes", &self.max_bytes.to_string()),
                 ("offset", &offset.to_string()),
             ])
             .send()
@@ -173,7 +185,8 @@ impl WorkloadRunner {
                 self.log_error(&("topic request failed:: resource: ".to_owned() + resource));
                 e.to_string()
             })?;
-
+        self.log_event(&("topic request finished:: resource: ".to_owned() + resource));
+        println!("res: {:?}", res);
         if !res.status().is_success() {
             self.log_error(&("topic response status was not success:: resource: ".to_owned() + resource + ", status: " + &res.status().to_string()));
             return Err("topic response status was not success".to_string());

@@ -187,8 +187,6 @@ def list_workloads():
     files = [f for f in os.listdir(WASM_FILES_DIR) if f.endswith('.wasm')]
     return files
 
-    
-
 @socketio.on('start_test')
 def handle_start_test(data):
     test_case_name = data['test_case_name']
@@ -241,6 +239,8 @@ def run_workload(step):
     average_spread = step.get('averageSpread', 0)
     workloads = step['workloads']
     keep_running = step.get('keepRunning', False)
+    timeout = step.get('timeout', 60)
+    max_bytes = step.get('maxBytes', 1000000) # default 1MB
 
     workload_order = []
     if selection == 'in-order':

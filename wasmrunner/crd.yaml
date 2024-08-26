@@ -22,6 +22,12 @@ spec:
                 deleteAfterCompletion:
                   type: boolean
                   default: true
+                timeout:
+                  type: integer
+                  default: 60
+                maxBytes:
+                  type: integer
+                  default: 1000000
             status:
               type: object
               properties:

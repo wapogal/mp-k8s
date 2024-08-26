@@ -122,6 +122,8 @@ def handle_added_event(event):
                         V1EnvVar(name= "KAFKA_PROXY_ADDRESS", value=resolved_proxy_address),
                         V1EnvVar(name= "DATA_ACCESS_ADDRESS", value=resolved_data_access_address),
                         V1EnvVar(name= "WORKLOAD_ID", value=wasm_runner_spec['workloadId']),
+                        V1EnvVar(name= "TIMEOUT", value=str(wasm_runner_spec['timeout'])),
+                        V1EnvVar(name= "MAX_BYTES", value=str(wasm_runner_spec['maxBytes'])),
                     ],
                     volume_mounts=[
                         V1VolumeMount(
