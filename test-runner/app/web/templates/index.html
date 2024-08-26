@@ -58,4 +58,23 @@
 
             <div id="test-case-viewer" class="hidden">
                 <div class="viewer-header">
-                    <input type="text" id="viewer​⬤
+                    <input type="text" id="viewer-title" readonly>
+                    <button class="edit-title-button" title="Edit test case name">&#9998;</button>
+                    <button class="save-title-button hidden" title="Save test case name">Save</button>
+                    <button class="cancel-title-button hidden" title="Cancel editing">Cancel</button>
+                    <button class="close-viewer" title="Close">X</button>
+                </div>
+                <textarea id="test-case-content" readonly></textarea>
+                <div class="viewer-actions">
+                    <button class="run-content-button" title="Run">&#9658;</button>
+                    <button class="revert-content-button" title="Revert">Revert</button>
+                    <button class="save-content-button" title="Save changes">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

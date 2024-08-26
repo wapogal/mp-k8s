@@ -15,11 +15,6 @@ async fn main() -> Result<(), String> {
             break Err("Timeout reached".to_string());
         }
         let (messages, final_msg_received) = runner.request_from_resource(resource).await?;
-        if final_msg_received {
-            println!("Received completion message.");
-            println!("Total sum: {}", sum);
-            return Ok(());
-        }
         for message in messages {
             if let Some(value) = message.get("value") {
                 if let Some(value_number) = value.get("value").and_then(|v| v.as_f64()) {
@@ -27,6 +22,11 @@ async fn main() -> Result<(), String> {
                     println!("Value: {}", value_number);
                 }
             }
+        }
+        if final_msg_received {
+            println!("Received completion message.");
+            println!("Total sum: {}", sum);
+            return Ok(());
         }
     }
 }

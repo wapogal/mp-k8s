@@ -57,7 +57,7 @@ sys.stderr = ErrorLogger(socketio)
 
 @app.route('/')
 def index():
-    return render_template('index.html', test_cases=list_test_cases())
+    return render_template('index.html', test_cases=list_test_cases(), workloads=list_workloads())
 
 @app.route('/get_test_cases', methods=['GET'])
 def get_test_cases():
@@ -140,6 +140,52 @@ def upload_test_case():
             return jsonify({'status': 'error', 'message': f'Error saving file: {str(e)}'}), 500
     else:
         return jsonify({'status': 'error', 'message': 'Invalid file type. Only YAML and WASM files are allowed.'}), 400
+
+@app.route('/get_workloads', methods=['GET'])
+def get_workloads():
+    workloads = list_workloads()
+    return jsonify({'workloads': workloads})
+
+@app.route('/upload_wasm_file', methods=['POST'])
+def upload_wasm_file():
+    if 'file' not in request.files:
+        return jsonify({'status': 'error', 'message': 'No file part in the request'}), 400
+
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'status': 'error', 'message': 'No selected file'}), 400
+    
+    if file.filename.endswith('.wasm'):
+        try:
+            file_path = os.path.join(WASM_FILES_DIR, file.filename)
+            file.save(file_path)
+            return jsonify({'status': 'success', 'message': f'Wasm file "{file.filename}" uploaded successfully.'})
+        except Exception as e:
+            return jsonify({'status': 'error', 'message': f'Error saving file: {str(e)}'}), 500
+    else:
+        return jsonify({'status': 'error', 'message': 'Invalid file type. Only WASM files are allowed.'}), 400
+
+@app.route('/delete_wasm_file', methods=['POST'])
+def delete_wasm_file():
+    data = request.get_json()
+    workload_name = data.get('workload_name')
+
+    file_path = os.path.join(WASM_FILES_DIR, workload_name)
+
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            return jsonify({'status': 'success', 'message': f'Wasm file "{workload_name}" deleted successfully.'})
+        else:
+            return jsonify({'status': 'error', 'message': f'Wasm file "{workload_name}" not found.'}), 404
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'Error deleting wasm file: {str(e)}'}), 500
+
+def list_workloads():
+    app.logger.info("Listing workloads from " + WASM_FILES_DIR)
+    files = [f for f in os.listdir(WASM_FILES_DIR) if f.endswith('.wasm')]
+    return files
 
     
 

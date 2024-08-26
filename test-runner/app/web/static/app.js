@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
     const socket = io();
-
     const logArea = document.getElementById('log-area');
     const testCaseViewer = document.getElementById('test-case-viewer');
     const testCaseContent = document.getElementById('test-case-content');
@@ -76,7 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                     testCasesList.appendChild(testCaseItem);
                 });
-
                 attachEventListeners();
             });
     };
@@ -100,8 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     };
-
-    attachEventListeners();
 
     closeViewer.addEventListener('click', function() {
         testCaseViewer.classList.add('hidden');
@@ -200,4 +196,72 @@ document.addEventListener('DOMContentLoaded', function() {
     socket.on('test_case_deleted', function() {
         refreshTestCasesList();
     });
+
+    document.getElementById('upload-wasm-button').addEventListener('click', function() {
+        document.getElementById('wasm-file-input').click();
+    });
+
+    document.getElementById('wasm-file-input').addEventListener('change', function() {
+        const formData = new FormData(document.getElementById('upload-wasm-form'));
+        fetch('/upload_wasm_file', {
+            method: 'POST',
+            body: formData
+        }).then(response => response.json())
+          .then(data => {
+              if (data.status === 'success') {
+                  refreshWorkloadsList();
+              } else {
+                  alert(data.message);
+              }
+          })
+          .catch(error => console.error('Error:', error));
+    });
+    
+    const refreshWorkloadsList = () => {
+        fetch('/get_workloads')
+            .then(response => response.json())
+            .then(data => {
+                const workloadsList = document.querySelector('.workloads-list');
+                workloadsList.innerHTML = '';
+                data.workloads.forEach(workload => {
+                    const workloadItem = document.createElement('div');
+                    workloadItem.classList.add('workload-item');
+                    workloadItem.innerHTML = `
+                        <span class="workload-name">${workload}</span>
+                        <button class="delete-wasm-button" title="Delete">&#128465;</button>
+                    `;
+                    workloadsList.appendChild(workloadItem);
+                });
+                attachWorkloadEventListeners();
+            });
+    };
+    
+    const attachWorkloadEventListeners = () => {
+        document.querySelectorAll('.delete-wasm-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const workloadName = this.parentElement.querySelector('.workload-name').textContent;
+                if (confirm(`Are you sure you want to delete the workload "${workloadName}"?`)) {
+                    fetch('/delete_wasm_file', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ workload_name: workloadName })
+                    }).then(response => response.json())
+                      .then(data => {
+                          if (data.status === 'success') {
+                              refreshWorkloadsList();
+                          } else {
+                              alert(data.message);
+                          }
+                      })
+                      .catch(error => console.error('Error:', error));
+                }
+            });
+        });
+    };
+    
+    // Initial calls to load lists
+    refreshTestCasesList();
+    refreshWorkloadsList();
 });
