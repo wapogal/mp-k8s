@@ -14,8 +14,7 @@ pub struct WorkloadRunner {
     kafka_proxy_address: String,
     topic_request_url: String,
     workload_id: String,
-    timeout: Duration,
-    max_bytes: u64,
+    pub settings: Value,
 
     // HTTP client
     client: Client,
@@ -36,12 +35,13 @@ impl WorkloadRunner {
         let data_access_address = std::env::var("DATA_ACCESS_ADDRESS").unwrap();
         let data_request_route = std::env::var("DATA_REQUEST_ROUTE").unwrap();
         let workload_id = std::env::var("WORKLOAD_ID").unwrap();
-        let timeout = Duration::from_secs(std::env::var("TIMEOUT").unwrap().parse::<u64>().unwrap());
-        let max_bytes = std::env::var("MAX_BYTES").unwrap().parse::<u64>().unwrap();
-        event_times.push((Instant::now(), "got env variables:: timeout: ".to_owned() + &timeout.as_secs().to_string()
-            + ", max_bytes: " + &max_bytes.to_string() + ", workload_id: " + &workload_id
+        let settings_string = std::env::var("SETTINGS").unwrap();
+        event_times.push((Instant::now(), "got env variables:: timeout: ".to_owned() + ", workload_id: " + &workload_id
             + ", kafka_proxy_address: " + &kafka_proxy_address + ", data_access_address: " + &data_access_address
             + ", data_request_route: " + &data_request_route));
+        
+        let settings: Value = serde_json::from_str(&settings_string).unwrap();
+        event_times.push((Instant::now(), "Got settings from json string: ".to_owned() + serde_json::to_string_pretty(&settings).unwrap().as_str()));
 
         let topic_request_url = "http://".to_owned() + &data_access_address + "/" + &data_request_route;
 
@@ -56,8 +56,7 @@ impl WorkloadRunner {
             kafka_proxy_address,
             topic_request_url,
             workload_id,
-            timeout,
-            max_bytes,
+            settings,
             client,
             input_topic_urls: HashMap::new(),
             output_topic_urls: HashMap::new(),
@@ -65,7 +64,8 @@ impl WorkloadRunner {
     }
 
     pub fn timeout_reached(&mut self) -> bool {
-        if Instant::now().duration_since(self.event_times.first().unwrap().0) > self.timeout {
+        let timeout_duration : Duration = Duration::from_secs(self.settings["timeout"].as_u64().unwrap());
+        if Instant::now().duration_since(self.event_times.first().unwrap().0) > timeout_duration {
             self.log_error("Timeout reached");
             true
         }
@@ -88,7 +88,7 @@ impl WorkloadRunner {
             let file_name = "/logs/event_times_".to_owned() + &self.workload_id + ".csv";
             let mut file = File::create(file_name).unwrap();
             for (instant, event) in &self.event_times {
-                writeln!(file, "{}, {}", instant.duration_since(start_time).as_millis(), event).unwrap();
+                writeln!(file, "{}, {};", instant.duration_since(start_time).as_millis(), event).unwrap();
             }
             println!("Event times written to file");
         }
@@ -178,8 +178,14 @@ impl WorkloadRunner {
             .get(&topic_url)
             .header("Accept", "application/vnd.kafka.json.v2+json")
             .query(&[
-                ("timeout", "1000"),
-                ("max_bytes", &self.max_bytes.to_string()),
+                ("timeout", self.settings["request"]["timeout"].as_u64().unwrap_or_else(|| {
+                    self.log_event(&("Using default timeout: ".to_owned() + "1000"));
+                    1000
+                }).to_string().as_str()),
+                ("max_bytes", self.settings["request"]["max_bytes"].as_u64().unwrap_or_else(|| {
+                    self.log_event(&("Using default max_bytes: ".to_owned() + "1000000"));
+                    1000000
+                }).to_string().as_str()),
                 ("offset", &offset.to_string()),
             ])
             .send()

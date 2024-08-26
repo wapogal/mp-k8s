@@ -1,3 +1,5 @@
+import copy
+import json
 import logging
 import random
 import shutil
@@ -24,6 +26,14 @@ TEST_CASES_FOLDER = "test-cases"
 WASM_FILES_FOLDER = "workloads"
 TEST_CASES_DIR = os.path.join(PERSISTENT_STORAGE_DIR, TEST_CASES_FOLDER)
 WASM_FILES_DIR = os.path.join(PERSISTENT_STORAGE_DIR, WASM_FILES_FOLDER)
+default_workload_settings = {
+    'resource': 'sample-data',
+    'timeout': 60,
+    'request': {
+        'timeout': 1000,
+        'max_bytes': 1000000
+    }
+}
 
 # Flask
 app = Flask(__name__, template_folder='web/templates', static_folder='web/static')
@@ -91,10 +101,10 @@ def create_test_case():
         return jsonify({'status': 'error', 'message': 'Invalid filename.'}), 400
 
     file_path = os.path.join(TEST_CASES_DIR, filename)
+    default_file_path = os.path.join('.', 'default_new_test_case.yaml')
 
     try:
-        with open(file_path, 'w') as f:
-            f.write('# New test case\nsteps:\n  - type: workload\n    workloadType: wasm\n    wasmFiles: []\n')
+        shutil.copy(default_file_path, file_path)
         return jsonify({'status': 'success', 'message': f'Test case "{filename}" created successfully.'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': f'Error creating test case: {str(e)}'}), 500
@@ -239,9 +249,8 @@ def run_workload(step):
     average_spread = step.get('averageSpread', 0)
     workloads = step['workloads']
     keep_running = step.get('keepRunning', False)
-    timeout = step.get('timeout', 60)
-    max_bytes = step.get('maxBytes', 1000000) # default 1MB
-
+    
+    settings = step.get('workloadSettings', default_workload_settings)
     workload_order = []
     if selection == 'in-order':
         workload_order = [i%len(workloads) for i in range(count)]
@@ -261,21 +270,20 @@ def run_workload(step):
     for i in range(count):
         w = workloads[workload_order[i]]
         if step['workloadType'] == 'wasm':
-            start_wasm_workload(w, keep_running, timeout, max_bytes)
+            start_wasm_workload(w, keep_running, settings)
         elif step['workloadType'] == 'container':
-            start_container_workload(w, timeout, max_bytes)
+            start_container_workload(w, settings)
         else:
             print(f"Unknown workload type: {step['workloadType']}")
         time.sleep(intervals[i])
 
-def start_wasm_workload(workload, keep_running: bool, timeout: int, max_bytes: int):
+def start_wasm_workload(workload, keepRunning, settings):
     # send http reques to file uploader
     with open (os.path.join(WASM_FILES_DIR, workload), 'rb') as f:
         files = {'file': f}
         form_data = {
-            'delete_after_completion': str(not keep_running).lower(),
-            'timeout': timeout,
-            'max_bytes': max_bytes
+            'delete_after_completion': str(not keepRunning).lower(),
+            'settings': json.dumps(settings)
         }
         r = requests.post(WASM_UPLOAD_URL, files=files, data=form_data)
         if r.status_code != 200:
@@ -286,11 +294,10 @@ def start_wasm_workload(workload, keep_running: bool, timeout: int, max_bytes: i
             return
         print(f"Uploaded wasm file: {workload}, running with workload id: {r.json()['workload_id']}")
 
-def start_container_workload(workload, timeout: int, max_bytes: int):
+def start_container_workload(workload, settings):
     r = requests.post(CONTAINER_UPLOAD_URL, json={
         'image_name': workload,
-        'timeout': timeout,
-        'max_bytes': max_bytes
+        'settings': json.dumps(settings)
         })
     if r.status_code != 200:
         print(f"Failed to start container workload: {workload} with status code: {r.status_code}")

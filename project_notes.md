@@ -83,3 +83,27 @@ We need NFS to get the WASM files to the right place even across nodes.
 
 ### Writing
 - look for kwasm papers
+
+# Workload Notes
+## Cleaning
+purpose: improve data quality
+- remove noise
+- interpolate missing values
+- detect outliers
+
+## Aggregation and summarization
+purpose: simplify data analysis by reduscing granularity/number of data points
+- Over time intervals
+- summaries (min, max, avg, etc.)
+
+## Normalization
+purpose: consistency across data sources
+- standard ranges/scales
+- convert units of measurement
+- format
+
+## Time Series Analysis
+purpose: detect temporal patterns in time series data, for things like predictive maintenance, anomaly detection, trend analysis, etc.
+- time series decomposition
+- forecasting models
+- autocorrelation analysis

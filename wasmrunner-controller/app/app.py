@@ -94,7 +94,7 @@ def handle_added_event(event):
     pod_name = f"{wasm_runner_metadata['name']}-pod"
     workload_path = "/wasm/workload.wasm"
 
-    logger.info(f"New runner added: {wasm_runner_metadata['name']}")
+    logger.info(f"New runner added: {wasm_runner_metadata['name']} with settings: {wasm_runner_spec['settings']}")
 
     pod = V1Pod(
         api_version="v1",
@@ -122,8 +122,7 @@ def handle_added_event(event):
                         V1EnvVar(name= "KAFKA_PROXY_ADDRESS", value=resolved_proxy_address),
                         V1EnvVar(name= "DATA_ACCESS_ADDRESS", value=resolved_data_access_address),
                         V1EnvVar(name= "WORKLOAD_ID", value=wasm_runner_spec['workloadId']),
-                        V1EnvVar(name= "TIMEOUT", value=str(wasm_runner_spec['timeout'])),
-                        V1EnvVar(name= "MAX_BYTES", value=str(wasm_runner_spec['maxBytes'])),
+                        V1EnvVar(name= "SETTINGS", value=wasm_runner_spec['settings']),
                     ],
                     volume_mounts=[
                         V1VolumeMount(

@@ -4,7 +4,11 @@ mod workload_runner;
 async fn main() -> Result<(), String> {
     let mut runner = workload_runner::WorkloadRunner::new();
 
-    let resource = "generated_records";
+    let settings = runner.settings.clone();
+    let resource = settings["resource"].as_str().unwrap_or_else(|| {
+        runner.log_event("Using default resource: sample-data");
+        "sample-data"
+    });
 
     let mut sum = 0.0;
     loop {

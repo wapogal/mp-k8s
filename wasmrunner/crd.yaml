@@ -22,12 +22,9 @@ spec:
                 deleteAfterCompletion:
                   type: boolean
                   default: true
-                timeout:
-                  type: integer
-                  default: 60
-                maxBytes:
-                  type: integer
-                  default: 1000000
+                settings:
+                  type: string
+                  default: '{ "resource": "sample-data", "timeout": 60, "request": { "timeout": 1000, "max_bytes": 1000000 } }'
             status:
               type: object
               properties:

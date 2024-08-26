@@ -1,3 +1,4 @@
+import json
 import logging
 from flask import Flask, request, jsonify, render_template
 from kubernetes import client, config
@@ -18,6 +19,16 @@ batch_v1 = client.BatchV1Api()
 core_v1 = client.CoreV1Api()
 custom_api = client.CustomObjectsApi()
 
+# Stuff
+default_workload_settings = {
+    'resource': 'sample-data',
+    'timeout': 60,
+    'request': {
+        'timeout': 1000,
+        'max_bytes': 1000000
+    }
+}
+
 @app.route('/')
 def index():
     return render_template('upload.html')
@@ -28,8 +39,8 @@ def upload_file():
     # Get things from the request
     file = request.files['file']
     delete_after_completion = request.form.get('delete_after_completion', 'true').lower() == 'true'
-    timeout = int(request.form.get('timeout', 60))
-    max_bytes = int(request.form.get('max_bytes', 1000000)) # default 1MB
+    settings = request.form.get('settings', json.dumps(default_workload_settings))
+    app.logger.info(f"Got file {file.filename} with settings: {settings}")
     
     # check if the uploaded file is a wasm file
     if not file.filename.endswith(".wasm"):
@@ -52,7 +63,7 @@ def upload_file():
     with open(workload_path, 'wb') as f:
         f.write(file.read())
     
-    trigger_processing(workload_id, delete_after_completion, timeout, max_bytes)
+    trigger_processing(workload_id, delete_after_completion, settings)
     return jsonify({'status': 'success', 'workload_id': workload_id})
 
 @app.route('/start_container_job', methods=['POST'])
@@ -60,8 +71,7 @@ def start_container_job():
     data = request.json
     image_name = data.get('image_name')
     workload_id = shortuuid.uuid().lower()
-    timeout = data.get('timeout', 60)
-    max_bytes = data.get('max_bytes', 1000000) # default 1MB
+    settings = data.get('settings', json.dumps(default_workload_settings))
 
     if not image_name:
         return jsonify({'status': 'error', 'message': 'Image name is required'}), 400
@@ -109,12 +119,8 @@ def start_container_job():
                                     value=workload_id
                                 ),
                                 client.V1EnvVar(
-                                    name="TIMEOUT",
-                                    value=str(timeout)
-                                ),
-                                client.V1EnvVar(
-                                    name="MAX_BYTES",
-                                    value=str(max_bytes)
+                                    name="SETTINGS",
+                                    value=settings
                                 ),
                             ],
                             volume_mounts=[
@@ -147,8 +153,9 @@ def start_container_job():
     except client.exceptions.ApiException as e:
         return jsonify({'status': 'error', 'message': f'Failed to start job: {e.reason}'}), 500
 
-def trigger_processing(workload_id: str, delete_after_completion: bool, timeout: int, max_bytes: int):
+def trigger_processing(workload_id: str, delete_after_completion: bool, settings: str):
     # configure the wasm runner
+    app.logger.info(f"Triggering processing for workload {workload_id} with settings: {settings}")
     wasm_runner_spec = {
         "apiVersion": "example.com/v1",
         "kind": "WasmRunner",
@@ -158,8 +165,7 @@ def trigger_processing(workload_id: str, delete_after_completion: bool, timeout:
         "spec": {
             "workloadId": workload_id,
             "deleteAfterCompletion": delete_after_completion,
-            "timeout": timeout,
-            "maxBytes": max_bytes,
+            "settings": settings
         }
     }
     

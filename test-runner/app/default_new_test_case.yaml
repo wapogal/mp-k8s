@@ -1,0 +1,25 @@
+# A new test case showing all options
+steps: # You can choose how many steps you want, they will be executed in order
+  - type: workload
+    workloadType: wasm # Required
+    wasmFiles: [] # Required
+    keepRunning: true # Optional, defaults to false
+    count: 1 # Optional, defaults to 1
+    spread: even # Optional, defaults to even, other options are 'even', 'random', 'ramp-up', 'ramp-down'
+    averageSpread: 0 # Optional, defaults to 0, determines time between each workload in case count > 1
+    selection: in-order # Optional, defaults to 'in-order', other options are 'in-order', 'random'
+    workloadSettings: # These can be any valid yaml and will get passed to the workload as a json string
+      resource: generated_records 
+      timeout: 60
+      request:
+        timeout: 1000
+        max_bytes: 1000000
+  - type: wait
+    seconds: 1 # Required
+  - type: workload
+    workloadType: container # Required
+    imageName: wapogal/scratch:latest # Required
+    keepRunning: true
+    workloadSettings: # These can be any valid yaml and will get passed to the workload as a json string
+      resource: sample-data
+      timeout: 60
