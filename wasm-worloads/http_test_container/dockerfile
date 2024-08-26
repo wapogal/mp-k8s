@@ -1,0 +1,18 @@
+# Build
+FROM rust:latest AS builder
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN cargo build --release
+
+
+# Actual image
+FROM rust:latest
+
+WORKDIR /usr/src/app
+
+COPY --from=builder /usr/src/app/target/release/http_test .
+
+CMD ["./http_test"]

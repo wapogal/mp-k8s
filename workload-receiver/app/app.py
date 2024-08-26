@@ -74,12 +74,36 @@ def start_container_job():
                             name=workload_id + "-container",
                             image=image_name,
                             image_pull_policy= "Always",
-                            envFrom=[
+                            env_from=[
                                 client.V1EnvFromSource(
                                     config_map_ref=client.V1ConfigMapEnvSource(
-                                        name="topics-config"
-                                )
-                            )
+                                        name="data-request-config"
+                                    )
+                                ),
+                            ],
+                            env=[
+                                client.V1EnvVar(
+                                    name="KAFKA_PROXY_ADDRESS",
+                                    value_from=client.V1EnvVarSource(
+                                        config_map_key_ref=client.V1ConfigMapKeySelector(
+                                            key="KAFKA_HTTP_PROXY",
+                                            name="workload-controller-config"
+                                        )
+                                    )
+                                ),
+                                client.V1EnvVar(
+                                    name="DATA_ACCESS_ADDRESS",
+                                    value_from=client.V1EnvVarSource(
+                                        config_map_key_ref=client.V1ConfigMapKeySelector(
+                                            key="DATA_ACCESS_SERVICE",
+                                            name="data-access-config"
+                                        )
+                                    )
+                                ),
+                                client.V1EnvVar(
+                                    name="WORKLOAD_ID",
+                                    value=workload_id
+                                ),
                             ],
                         ),
                         

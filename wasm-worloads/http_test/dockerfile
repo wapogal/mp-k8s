@@ -1,3 +1,0 @@
-FROM scratch
-COPY target/wasm32-wasi/release/http_test.wasm /
-CMD ["/http_test.wasm"]
