@@ -49,16 +49,12 @@ impl Aggregator {
 
 impl StreamProcessor for Aggregator {
     fn process(&mut self, msg_value: Value) -> Option<Vec<String>> {
-        println!("Processing value: {:?}", msg_value);
         let mut return_value = None;
-        println!("return value: {:?}", return_value);
         let timestamp = msg_value["timestamp"].as_u64()?;
         let metric = msg_value["metric"].as_str()?;
         let value = msg_value["value"].as_f64()?;
         let _source = msg_value["source"].as_str()?; // Prefixed with underscore to suppress unused variable warning
         let tags = msg_value["tags"].as_array()?;
-
-        println!("Processing value: {:?}", value);
 
         let group = (
             metric.to_string(),
@@ -66,8 +62,6 @@ impl StreamProcessor for Aggregator {
                 .map(|v| v.as_str().unwrap_or_default().to_string())
                 .collect(),
         );
-
-        println!("Group: {:?}", group);
 
         let group_clone = group.clone();
         self.window_start.entry(group_clone.clone()).or_insert(timestamp);
