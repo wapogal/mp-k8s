@@ -29,6 +29,15 @@ default_workload_settings = {
     }
 }
 
+default_resource_limits = {
+    'cpu': '0.5',
+    'memory': '512Mi'
+}
+
+default_runtime_config = {
+    'runtimeClass': 'wasmedge'
+    }
+
 @app.route('/')
 def index():
     return render_template('upload.html')
@@ -40,7 +49,10 @@ def upload_file():
     file = request.files['file']
     delete_after_completion = request.form.get('delete_after_completion', 'true').lower() == 'true'
     settings = request.form.get('settings', json.dumps(default_workload_settings))
+    resource_limits = request.form.get('resource_limits', json.dumps(default_resource_limits))
+    runtime_config = request.form.get('runtime_config', json.dumps(default_runtime_config))
     app.logger.info(f"Got file {file.filename} with settings: {settings}")
+    app.logger.info(f"Got runtime config: {runtime_config}")
     
     # check if the uploaded file is a wasm file
     if not file.filename.endswith(".wasm"):
@@ -63,7 +75,7 @@ def upload_file():
     with open(workload_path, 'wb') as f:
         f.write(file.read())
     
-    trigger_processing(workload_id, delete_after_completion, settings)
+    trigger_processing(workload_id, delete_after_completion, settings, resource_limits, runtime_config)
     return jsonify({'status': 'success', 'workload_id': workload_id})
 
 @app.route('/start_container_job', methods=['POST'])
@@ -72,6 +84,7 @@ def start_container_job():
     image_name = data.get('image_name')
     workload_id = shortuuid.uuid().lower()
     settings = data.get('settings', json.dumps(default_workload_settings))
+    resource_limits = json.loads(data.get('resource_limits', json.dumps(default_resource_limits)))
 
     if not image_name:
         return jsonify({'status': 'error', 'message': 'Image name is required'}), 400
@@ -86,6 +99,12 @@ def start_container_job():
                     containers=[
                         client.V1Container(
                             name=workload_id + "-container",
+                            resources=client.V1ResourceRequirements(
+                                limits= {
+                                    "cpu": resource_limits.get('cpu'),
+                                    "memory": resource_limits.get('memory')
+                                }
+                            ),
                             image=image_name,
                             image_pull_policy= "Always",
                             env_from=[
@@ -153,9 +172,9 @@ def start_container_job():
     except client.exceptions.ApiException as e:
         return jsonify({'status': 'error', 'message': f'Failed to start job: {e.reason}'}), 500
 
-def trigger_processing(workload_id: str, delete_after_completion: bool, settings: str):
+def trigger_processing(workload_id: str, delete_after_completion: bool, settings: str, resource_limits: str, runtime_config: str):
     # configure the wasm runner
-    app.logger.info(f"Triggering processing for workload {workload_id} with settings: {settings}")
+    app.logger.info(f"Triggering processing for workload {workload_id} with settings: {settings} and runtime config: {runtime_config}")
     wasm_runner_spec = {
         "apiVersion": "example.com/v1",
         "kind": "WasmRunner",
@@ -165,7 +184,9 @@ def trigger_processing(workload_id: str, delete_after_completion: bool, settings
         "spec": {
             "workloadId": workload_id,
             "deleteAfterCompletion": delete_after_completion,
-            "settings": settings
+            "settings": settings,
+            "resourceLimits": resource_limits,
+            "runtimeConfig": runtime_config
         }
     }
     

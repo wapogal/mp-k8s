@@ -135,12 +135,12 @@ impl WorkloadRunner {
 
     pub fn log_error(&mut self, error: &str) {
         self.event_times.push((Instant::now(), error.to_string()));
-        eprintln!("{}", error);
+        // eprintln!("{}", error);
     }
 
     pub fn log_event(&mut self, event: &str) {
         self.event_times.push((Instant::now(), event.to_string()));
-        println!("{}", event);
+        // println!("{}", event);
     }
 
     async fn get_input_topic(&mut self, resource: &str) -> Result<(), String> {

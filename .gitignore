@@ -4,6 +4,7 @@ __pycache__/
 /kubernetes-prometheus/
 done.sh
 */.app_folder_hash
+*.ipynb
 
 # Generated files
 wasm-worloads/*/target/

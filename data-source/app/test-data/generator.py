@@ -29,7 +29,7 @@ def write_records_to_file(filename, records):
         json.dump(records, f, indent=4)
 
 if __name__ == "__main__":
-    filename = "gen_400k.json"
-    records = generate_records(400000)
+    filename = "gen_40k.json"
+    records = generate_records(40000)
     write_records_to_file(filename, records)
     print(f"{len(records)} records written to {filename}")

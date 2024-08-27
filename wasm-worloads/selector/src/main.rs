@@ -7,15 +7,23 @@ use processing::sp_trait;
 use std::fs::OpenOptions;
 use std::io::Write;
 
+use std::rc::Rc;
+use std::cell::RefCell;
+
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), String> {
-    let mut runner = workload_runner::WorkloadRunner::new();
+    let runner = Rc::new(RefCell::new(workload_runner::WorkloadRunner::new()));
 
-    let settings = runner.settings.clone();
+    let log_event_closure = {
+        let runner_clone = Rc::clone(&runner);
+        Box::new(move |event: &str| runner_clone.borrow_mut().log_event(event))
+    };
+    
+    let settings = runner.borrow().settings.clone();
     let resource = settings["resource"].as_str().unwrap_or_else(|| {
-        runner.log_event("Using default resource: sample-data");
+        runner.borrow_mut().log_event("Using default resource: sample-data");
         "sample-data"
     });
 
@@ -25,44 +33,44 @@ async fn main() -> Result<(), String> {
         let processor_type = processor_settings["type"].as_str().unwrap_or("aggregator");
         match processor_type {
             "aggregator" => {
-                runner.log_event("Using aggregator processor");
-                processor = Some(Box::new(aggregator::Aggregator::new(processor_settings["windowSize"].as_u64().unwrap_or(1000))));
+                runner.borrow_mut().log_event("Using aggregator processor");
+                processor = Some(Box::new(aggregator::Aggregator::new(processor_settings["windowSize"].as_u64().unwrap_or(1000), log_event_closure)));
             }
             _ => {
-                runner.log_event(&("Unknown processor type: ".to_owned() + processor_type));
+                runner.borrow_mut().log_event(&("Unknown processor type: ".to_owned() + processor_type));
             }
         }
     }
 
     if let Some(mut processor) = processor {
         loop {
-            if runner.timeout_reached() {
+            if runner.borrow_mut().timeout_reached() {
                 break Err("Timeout reached".to_string());
             }
     
-            let (messages, final_msg_received) = runner.request_from_resource(resource).await?;
+            let (messages, final_msg_received) = runner.borrow_mut().request_from_resource(resource).await?;
     
             for message in messages {
                 if let Some(value) = message.get("value") {
                     let out = processor.process(value.clone());
                     if let Some(out) = out {
-                        runner.log_event("Processor returned output");
+                        runner.borrow_mut().log_event("Processor returned output");
                         write_output(&out)?;
-                        runner.log_event("Output written");
+                        runner.borrow_mut().log_event("Output written");
                     }
             }
             }
     
             if final_msg_received {
                 let out = processor.finish();
-                runner.log_event("Processor returned final output");
+                runner.borrow_mut().log_event("Processor returned final output");
                 write_output(&out)?;
-                runner.log_event("Final output written, Finished");
+                runner.borrow_mut().log_event("Final output written, Finished");
                 return Ok(());
             }
         }
     } else {
-        runner.log_event("No processor defined");
+        runner.borrow_mut().log_event("No processor defined");
         return Err("No processor defined".to_string());
     }
 }

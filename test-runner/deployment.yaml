@@ -24,7 +24,12 @@ spec:
         volumeMounts:
           - name: persistant-storage
             mountPath: /persistant-storage
+          - name: wl-logs
+            mountPath: /workload-logs
       volumes:
         - name: persistant-storage
           persistentVolumeClaim:
             claimName: test-runner-pvc
+        - name: wl-logs
+          persistentVolumeClaim:
+            claimName: workload-logs-pvc

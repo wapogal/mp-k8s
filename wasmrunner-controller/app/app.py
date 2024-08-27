@@ -1,14 +1,13 @@
 import json
 import os
 import shutil
-import time
 import traceback
 import threading
 from kafka import KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
 from kubernetes import client, config, watch
 from kubernetes.client.rest import ApiException
-from kubernetes.client import V1PodSpec, V1Container, V1VolumeMount, V1Volume, V1PersistentVolumeClaimVolumeSource, V1EnvFromSource, V1ConfigMapEnvSource, V1ObjectMeta, V1EnvVar, V1Pod
+from kubernetes.client import V1PodSpec, V1Container, V1VolumeMount, V1Volume, V1PersistentVolumeClaimVolumeSource, V1EnvFromSource, V1ConfigMapEnvSource, V1ObjectMeta, V1EnvVar, V1Pod, V1ResourceRequirements
 import logging
 import dns.resolver
 
@@ -96,6 +95,11 @@ def handle_added_event(event):
 
     logger.info(f"New runner added: {wasm_runner_metadata['name']} with settings: {wasm_runner_spec['settings']}")
 
+    resource_limits = json.loads(wasm_runner_spec['resourceLimits'])
+    runtime_config = json.loads(wasm_runner_spec.get('runtimeConfig', '{"runtimeClass": "wasmedge"}'))
+    logger.info(f"Runtime config: {runtime_config}")
+    logger.info(f"Spec: {wasm_runner_spec}")
+
     pod = V1Pod(
         api_version="v1",
         kind="Pod",
@@ -111,6 +115,13 @@ def handle_added_event(event):
                     name="wasm-runtime",
                     image="wapogal/scratch:latest",
                     command=[workload_path],
+                    args=runtime_config.get('args', None),
+                    resources=V1ResourceRequirements(
+                        limits= {
+                            "cpu": resource_limits.get('cpu'),
+                            "memory": resource_limits.get('memory')
+                        }
+                    ),
                     env_from=[
                         V1EnvFromSource(
                             config_map_ref=V1ConfigMapEnvSource(
@@ -153,7 +164,7 @@ def handle_added_event(event):
                     )
                 ),
             ],
-            runtime_class_name="wasmedge"
+            runtime_class_name=runtime_config.get('runtimeClass', 'wasmedge')
         )
     )
 

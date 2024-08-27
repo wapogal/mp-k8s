@@ -34,6 +34,10 @@ default_workload_settings = {
         'max_bytes': 1000000
     }
 }
+default_resource_limits = {
+    'cpu': '0.5',
+    'memory': '512Mi'
+}
 
 # Flask
 app = Flask(__name__, template_folder='web/templates', static_folder='web/static')
@@ -249,8 +253,11 @@ def run_workload(step):
     average_spread = step.get('averageSpread', 0)
     workloads = step['workloads']
     keep_running = step.get('keepRunning', False)
+    runtime_config = step.get('runtimeConfig')
     
     settings = step.get('workloadSettings', default_workload_settings)
+    resource_limits = step.get('resource-limits', default_resource_limits)
+
     workload_order = []
     if selection == 'in-order':
         workload_order = [i%len(workloads) for i in range(count)]
@@ -270,20 +277,26 @@ def run_workload(step):
     for i in range(count):
         w = workloads[workload_order[i]]
         if step['workloadType'] == 'wasm':
-            start_wasm_workload(w, keep_running, settings)
+            start_wasm_workload(w, keep_running, settings, resource_limits, runtime_config)
         elif step['workloadType'] == 'container':
-            start_container_workload(w, settings)
+            start_container_workload(w, settings, resource_limits)
         else:
             print(f"Unknown workload type: {step['workloadType']}")
         time.sleep(intervals[i])
 
-def start_wasm_workload(workload, keepRunning, settings):
+def start_wasm_workload(workload, keepRunning, settings, resource_limits, runtime_config):
     # send http reques to file uploader
     with open (os.path.join(WASM_FILES_DIR, workload), 'rb') as f:
+        app.logger.info(f"Uploading wasm file: {workload}")
+        app.logger.info(f"Settings: {settings}")
+        app.logger.info(f"Resource limits: {resource_limits}")
+        app.logger.info(f"Runtime config: {runtime_config}")
         files = {'file': f}
         form_data = {
             'delete_after_completion': str(not keepRunning).lower(),
-            'settings': json.dumps(settings)
+            'settings': json.dumps(settings),
+            'resource_limits': json.dumps(resource_limits),
+            'runtime_config': json.dumps(runtime_config)
         }
         r = requests.post(WASM_UPLOAD_URL, files=files, data=form_data)
         if r.status_code != 200:
@@ -294,10 +307,11 @@ def start_wasm_workload(workload, keepRunning, settings):
             return
         print(f"Uploaded wasm file: {workload}, running with workload id: {r.json()['workload_id']}")
 
-def start_container_workload(workload, settings):
+def start_container_workload(workload, settings, resource_limits):
     r = requests.post(CONTAINER_UPLOAD_URL, json={
         'image_name': workload,
-        'settings': json.dumps(settings)
+        'settings': json.dumps(settings),
+        'resource_limits': json.dumps(resource_limits)
         })
     if r.status_code != 200:
         print(f"Failed to start container workload: {workload} with status code: {r.status_code}")
