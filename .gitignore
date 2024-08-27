@@ -8,3 +8,4 @@ done.sh
 # Generated files
 wasm-worloads/*/target/
 charts/
+exported/
