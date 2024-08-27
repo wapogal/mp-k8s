@@ -7,8 +7,6 @@ use processing::sp_trait;
 use std::fs::OpenOptions;
 use std::io::Write;
 
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), String> {
     let mut runner = workload_runner::WorkloadRunner::new();
