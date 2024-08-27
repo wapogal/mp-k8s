@@ -138,7 +138,7 @@ impl StreamProcessor for Aggregator {
                 "{},{},{},{},{},{},{},{};",
                 timestamp,
                 metric,
-                tags.join(","),
+                tags.join("-"),
                 agg_metrics.count,
                 agg_metrics.sum,
                 agg_metrics.min,

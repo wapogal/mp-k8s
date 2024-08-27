@@ -5,7 +5,7 @@ def generate_record(timestamp):
     metric_type = random.choice(["temperature.celsius::number", "humidity.percent::number"])
     value = round(random.uniform(15.0, 60.0), 12)
     source = "device_" + "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", k=16))
-    tags = [f"roomId=Room{random.choice(['A', 'B', 'C'])}", f"gateway=demo{random.randint(1, 3)}"]
+    tags = [f"roomId=Room{random.choice(['A', 'B'])}", f"gateway=demo{random.randint(1, 3)}"]
     
     return {
         "timestamp": timestamp,
@@ -20,7 +20,7 @@ def generate_records(n=400):
     records = []
     
     for i in range(n):
-        records.append(generate_record(start_timestamp + i * 60000))  # Incrementing timestamp by 60 seconds
+        records.append(generate_record(start_timestamp + i * 6000))  # Incrementing timestamp by 6 seconds
     
     return records
 
@@ -29,7 +29,7 @@ def write_records_to_file(filename, records):
         json.dump(records, f, indent=4)
 
 if __name__ == "__main__":
-    filename = "generated_records.json"
-    records = generate_records(4000)
+    filename = "gen_400k.json"
+    records = generate_records(400000)
     write_records_to_file(filename, records)
     print(f"{len(records)} records written to {filename}")
