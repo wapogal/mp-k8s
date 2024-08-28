@@ -92,7 +92,7 @@ def start_container_job():
     job_spec = client.V1Job(
         api_version="batch/v1",
         kind="Job",
-        metadata=client.V1ObjectMeta(name=workload_id + "-job"),
+        metadata=client.V1ObjectMeta(name="oci-" +workload_id + "-job"),
         spec=client.V1JobSpec(
             template=client.V1PodTemplateSpec(
                 spec=client.V1PodSpec(

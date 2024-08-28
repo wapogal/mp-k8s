@@ -8,7 +8,6 @@ fi
 
 CURRENT_NUMBER=$(cat "$INCREMENT_FILE")
 NEXT_NUMBER=$((CURRENT_NUMBER + 1))
-echo "$NEXT_NUMBER" > "$INCREMENT_FILE"
 
 RUST_WORKLOAD_NAME="selector-$NEXT_NUMBER"
 IMAGE_RUST_WORKLOAD_NAME="wapogal/${RUST_WORKLOAD_NAME}:latest"
@@ -44,6 +43,8 @@ fi
 echo "DOCKER: Building $RUST_WORKLOAD_NAME"
 docker buildx build -t "$IMAGE_RUST_WORKLOAD_NAME" --push . --platform linux/amd64
 
+echo "$NEXT_NUMBER" > "$INCREMENT_FILE"
+
 NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
 NODE_PORT=$(kubectl get service test-runner-service -o jsonpath='{.spec.ports[0].nodePort}')
 
@@ -66,14 +67,14 @@ steps:
       cpu: 0.5
       memory: 512Mi
     workloadSettings:
-      resource: gen_40k
+      resource: sample_data
       timeout: 696969
       request:
         timeout: 1000
-        max_bytes: 1000000
+        max_bytes: 10000
       processor:
         type: aggregator
-        windowSize: 1000000
+        windowSize: 100000
   - type: workload
     workloadType: container
     workloads: [${IMAGE_RUST_WORKLOAD_NAME}]
@@ -81,14 +82,14 @@ steps:
       cpu: 0.5
       memory: 512Mi
     workloadSettings:
-      resource: gen_40k
+      resource: sample_data
       timeout: 696969
       request:
         timeout: 1000
-        max_bytes: 10000000 
+        max_bytes: 10000
       processor:
         type: aggregator
-        windowSize: 1000000
+        windowSize: 100000
 EOF
 
 echo "Uploading $YAML_FILE to $EXTERNAL_URL_YAML"

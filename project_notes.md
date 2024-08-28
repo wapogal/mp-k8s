@@ -47,7 +47,7 @@
 - Depending on how "separated" the workloads need to be, you could use a mix of both and maybe not add access control to the partitions. for example, All users that have the same access rights could all use the same topic, but each on their own partition. You're still relying on the wasm uploaders to play fair.
 
 ## Redpanda things
-- To clean up all topics except _schemas: ```rpk topic delete $(rpk topic list | grep -v '^_schemas' | grep -v '^topic-notifications' | awk 'NR>1 {print $1}')```
+- To clean up all topics except _schemas: ```rpk topic delete $(rpk topic list | grep -v '^_schemas' | grep -v '^workload-notification' | grep -v '^data-sources' | awk 'NR>1 {print $1}')```
 
 ## NFS
 We need NFS to get the WASM files to the right place even across nodes.

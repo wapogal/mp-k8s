@@ -195,6 +195,15 @@ def delete_wasm_file():
             return jsonify({'status': 'error', 'message': f'Wasm file "{workload_name}" not found.'}), 404
     except Exception as e:
         return jsonify({'status': 'error', 'message': f'Error deleting wasm file: {str(e)}'}), 500
+    
+@app.route('/start_test', methods=['POST'])
+def start_test():
+    data = request.get_json()
+    test_case_name = data.get('test_case_name')
+    print(f"Starting test case {test_case_name}...")
+    thread = threading.Thread(target=run_test_case, args=(test_case_name,))
+    thread.start()
+    return jsonify({'status': 'success', 'message': f'Test case "{test_case_name}" started successfully.'})
 
 def list_workloads():
     app.logger.info("Listing workloads from " + WASM_FILES_DIR)

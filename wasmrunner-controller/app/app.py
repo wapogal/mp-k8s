@@ -100,6 +100,17 @@ def handle_added_event(event):
     logger.info(f"Runtime config: {runtime_config}")
     logger.info(f"Spec: {wasm_runner_spec}")
 
+    # I think I need to put the options in front of the file path and the args after
+    command = [runtime_config.get('command', "")]
+    logger.info(f"Command: {command}")
+
+    runner_args = []
+    runner_args.extend(runtime_config.get('options', []))
+    runner_args.append(workload_path)
+    runner_args.extend(runtime_config.get('args', []))
+    runner_args = [str(a) for a in runner_args]
+    logger.info(f"Runner args: {runner_args}")
+
     pod = V1Pod(
         api_version="v1",
         kind="Pod",
@@ -115,8 +126,8 @@ def handle_added_event(event):
                 V1Container(
                     name="wasm-runtime",
                     image="wapogal/scratch:latest",
-                    command=[workload_path],
-                    args=runtime_config.get('args', None),
+                    # command=command,
+                    args=runner_args,
                     resources=V1ResourceRequirements(
                         limits= {
                             "cpu": resource_limits.get('cpu'),

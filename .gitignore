@@ -6,10 +6,11 @@ done.sh
 
 # Generated files
 */.app_folder_hash
-selector-workload/target/
-selector-workload/aot_compiled/
-selector-workload/Cargo.lock
-selector-workload/.name_increment
+*/target/
+*/aot_compiled/
+*/Cargo.lock
+*/.name_increment
+*/.workload_settings
 charts/
 evaluation/
 debug/

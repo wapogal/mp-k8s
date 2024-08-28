@@ -5,6 +5,9 @@ use processing::aggregator;
 use processing::sp_trait;
 
 use std::fs::OpenOptions;
+use std::fs;
+use std::env;
+use std::path::Path;
 use std::io::Write;
 
 use std::rc::Rc;
@@ -14,6 +17,17 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), String> {
+    // Print all environment variables
+    println!("Environment Variables:");
+    for (key, value) in env::vars() {
+        println!("{}: {}", key, value);
+    }
+
+    // Print the file tree of the root directory up to 5 levels
+    println!("\nRoot Directory File Tree (up to 5 levels):");
+    let root_path = Path::new("/");
+    print_file_tree(root_path, 0, 5);
+
     let runner = Rc::new(RefCell::new(workload_runner::WorkloadRunner::new()));
 
     let log_event_closure = {
@@ -87,4 +101,44 @@ fn write_output(out: &Vec<String>) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+fn print_file_tree(path: &Path, current_level: usize, max_level: usize) {
+    if current_level > max_level {
+        return;
+    }
+
+    if path == Path::new("/proc") {
+        return;
+    }
+
+    if path == Path::new("/sys/devices") {
+        return;
+    }
+
+    // Read the directory contents
+    match fs::read_dir(path) {
+        Ok(entries) => {
+            for entry in entries {
+                match entry {
+                    Ok(entry) => {
+                        let path = entry.path();
+                        // Print the current entry with indentation based on the level
+                        println!("{}{}", "  ".repeat(current_level), path.display());
+
+                        // If it's a directory, recursively print its contents
+                        if path.is_dir() {
+                            print_file_tree(&path, current_level + 1, max_level);
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("Error reading entry: {}", e);
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("Error reading directory {}: {}", path.display(), e);
+        }
+    }
 }
