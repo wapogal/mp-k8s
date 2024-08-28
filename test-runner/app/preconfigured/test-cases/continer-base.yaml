@@ -1,0 +1,17 @@
+# New test case
+steps:
+  - type: workload
+    workloadType: container
+    workloads: [wapogal/selector:latest]
+    resource-limits:
+      cpu: 0.5
+      memory: 512Mi
+    workloadSettings:
+      resource: gen_400k
+      timeout: 696969
+      request:
+        timeout: 1000
+        max_bytes: 10000000  # I know, the snake_case should be replaced with camelCase
+      processor:
+        type: aggregator
+        windowSize: 1000000

@@ -3,10 +3,13 @@ __pycache__/
 .ds_store
 /kubernetes-prometheus/
 done.sh
-*/.app_folder_hash
-*.ipynb
 
 # Generated files
-wasm-worloads/*/target/
+*/.app_folder_hash
+selector-workload/target/
+selector-workload/aot_compiled/
+selector-workload/Cargo.lock
+selector-workload/.name_increment
 charts/
-exported/
+evaluation/
+debug/

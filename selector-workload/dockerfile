@@ -1,0 +1,19 @@
+# Build
+FROM rust:latest AS builder
+
+WORKDIR /usr/src/app
+
+COPY container_cargo .
+COPY src ./src
+
+RUN cargo build --release
+
+
+# Actual image
+FROM rust:latest
+
+WORKDIR /usr/src/app
+
+COPY --from=builder /usr/src/app/target/release/selector .
+
+CMD ["./selector"]

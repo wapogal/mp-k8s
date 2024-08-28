@@ -96,7 +96,7 @@ def handle_added_event(event):
     logger.info(f"New runner added: {wasm_runner_metadata['name']} with settings: {wasm_runner_spec['settings']}")
 
     resource_limits = json.loads(wasm_runner_spec['resourceLimits'])
-    runtime_config = json.loads(wasm_runner_spec.get('runtimeConfig', '{"runtimeClass": "wasmedge"}'))
+    runtime_config = json.loads(wasm_runner_spec.get('runtimeConfig', '{"runtimeClass": "wasmtime"}'))
     logger.info(f"Runtime config: {runtime_config}")
     logger.info(f"Spec: {wasm_runner_spec}")
 
@@ -106,6 +106,7 @@ def handle_added_event(event):
         metadata=V1ObjectMeta(
             name= pod_name,
             annotations={
+                "module.wasm.image/variant": "compat-smart",
                 "wasmrunner-name": wasm_runner_metadata['name'],
             },
         ),
@@ -164,7 +165,7 @@ def handle_added_event(event):
                     )
                 ),
             ],
-            runtime_class_name=runtime_config.get('runtimeClass', 'wasmedge')
+            runtime_class_name=runtime_config.get('runtimeClass', 'wasmtime')
         )
     )
 
