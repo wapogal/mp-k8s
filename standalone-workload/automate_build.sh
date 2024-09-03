@@ -85,7 +85,7 @@ fi
 
 if [ "$SKIP_BUILD" = false ]; then
   echo "RUST: AOT compiling $INPUT_WASM_FILE to $OUTPUT_WASM_FILE"
-  wasmedge compile --optimize 3 --enable-tail-call --enable-threads "$INPUT_WASM_FILE" "$OUTPUT_WASM_FILE"
+  wasmedge compile "$INPUT_WASM_FILE" "$OUTPUT_WASM_FILE"
 fi
 
 if [ ! -f "$OUTPUT_WASM_FILE" ]; then
@@ -121,7 +121,7 @@ steps:
     workloads: [${RUST_WORKLOAD_NAME}.wasm]
     keepRunning: true
     runtimeConfig:
-      runtimeClass: wasmedge
+      runtimeClass: wasmtime
     resource-limits:
       cpu: 0.5
       memory: 512Mi

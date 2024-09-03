@@ -11,6 +11,5 @@ done.sh
 */Cargo.lock
 */.name_increment
 */.workload_settings
-charts/
 evaluation/
 debug/

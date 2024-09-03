@@ -12,8 +12,8 @@ const FILE_WRITES: usize = 1000;
 const IN_MEMORY_SIZE: usize = 10_000;
 
 fn main() -> Result<(), String> {
-    let io_file_path = env::var("IO_TEST_FILE_PATH").unwrap_or("/host_filder/tmp/file_operation.txt".to_string());
-    let csv_file_path = env::var("LOG_FILE_PATH").unwrap_or("/host_folder/output/log.csv".to_string());
+    let io_file_path = env::var("IO_TEST_FILE_PATH").unwrap_or("/logs/file_operation.txt".to_string());
+    let csv_file_path = env::var("LOG_FILE_PATH").unwrap_or("/logs/log.csv".to_string());
     let aot_options = env::var("AOT_OPTIONS").unwrap_or("".to_string());
     let runtime_options = env::var("RUNTIME_OPTIONS").unwrap_or("".to_string());
 

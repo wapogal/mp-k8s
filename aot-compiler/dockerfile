@@ -1,0 +1,3 @@
+FROM scratch
+COPY /compiled/aot-compiler.wasm /
+ENTRYPOINT ["/aot-compiler.wasm"]
